@@ -129,6 +129,7 @@ class CompanyRegistrationsController < ApplicationController
     Event.create(:COMP_DENIED, obj.new(company, params[:email_text]))
   end
 
+
   private
   def company_params
     params.require(:company).permit(:name, :email, :phone, :fax,
