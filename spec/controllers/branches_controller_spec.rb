@@ -218,6 +218,7 @@ RSpec.describe BranchesController, type: :controller do
       expect(response).to have_http_status(:redirect)
     end
   end
+
   describe 'action authorization' do
     context '#new' do
       it 'authorizes agency admin' do
@@ -306,3 +307,6 @@ RSpec.describe BranchesController, type: :controller do
     end
   end
 end
+
+
+
