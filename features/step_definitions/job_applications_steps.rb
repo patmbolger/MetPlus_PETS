@@ -113,5 +113,8 @@ And(/^I input "([^"]*)" as the reason for rejection$/) do |reason|
 end
 
 Then /^I should get a download with the filename "([^\"]*)"$/ do |filename|
-  page.driver.response.headers['Content-Disposition'].should include("filename=\"#{filename}\"")
+  expect(page.driver.response_headers['Content-Disposition']).
+                  to include("attachment; filename=\"#{filename}\"")
+  expect(page.driver.response_headers['Content-Type']).
+                  to eq 'application/octet-stream'
 end
