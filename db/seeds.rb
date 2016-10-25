@@ -1,5 +1,16 @@
 require 'ffaker'
 
+require 'webmock'
+include WebMock::API
+
+require './spec/support/service_stub_helpers'
+include ServiceStubHelpers::EmailValidator
+
+WebMock.enable!
+WebMock.allow_net_connect!  # allow non-stubbed service calls to proceed
+
+stub_email_validate_valid   # stub mailgun email validation
+
 def create_address(location = nil)
   street = Faker::Address.street_address
   city = Faker::Address.city
@@ -249,6 +260,7 @@ if Rails.env.development? || Rails.env.staging?
     # Add job application for known_company
     job = Job.where(company: known_company)[r.rand(25)]
     JobApplication.create(job: job, job_seeker: job_seeker)
+    Task.new_review_job_application_task job, known_company
   end
 
   js1 = JobSeeker.create(first_name: 'Tom', last_name: 'Seeker',
@@ -257,9 +269,10 @@ if Rails.env.development? || Rails.env.staging?
             job_seeker_status: @jss1, confirmed_at: Time.now,
                       address: create_address)
 
-  # Have this JS apply to all known_company jobs
+  # Have this JS apply to every other known_company jobs
   Job.where(company: known_company).each do |job|
-    JobApplication.create(job: job, job_seeker: js1)
+    JobApplication.create(job: job, job_seeker: js1) unless job.id % 2 == 0
+    Task.new_review_job_application_task job, known_company
   end
 
   # Add résumé to this job seeker
