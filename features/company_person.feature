@@ -118,6 +118,15 @@ Feature: Company Person
     And I should not see "Jane"
     And I should see "Mary"
 
+  Scenario: company contact cancel out of edit profile
+    Given I am on the home page
+    And I login as "jane@widgets.com" with password "qwerty123"
+    And I should be on the Company Person 'jane@widgets.com' Home page
+    Then I press "edit-profile"
+    And I should see "Update Your Profile"
+    Then I click the "Cancel" link
+    Then I should be on the Company Person 'jane@widgets.com' Home page
+
   Scenario: company contact login and edit profile from name
     Given I am on the home page
     And I login as "jane@widgets.com" with password "qwerty123"
@@ -165,8 +174,8 @@ Feature: Company Person
     And I should not see selections of "Feature Inc." addresses
     And I select "12 Main Street Detroit, Michigan 02034" in select list "Address"
     Then I click "Update Company person" button
-    And I should be on the Company person 'jane@widgets.com' show page
-    And I should see "12 Main Street Detroit, Michigan 02034"
+    And I should be on the Company Person 'jane@widgets.com' Home page
+    And I should see "Your profile was updated successfully."
 
   @javascript
   Scenario: verify people listing in home page
