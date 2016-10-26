@@ -5,9 +5,14 @@ RSpec.describe JobApplicationsController, type: :controller do
 
   let(:job) { FactoryGirl.create(:job) }
   let(:job_seeker) { FactoryGirl.create(:job_seeker) }
-  let(:resume)     { FactoryGirl.create(:resume, job_seeker: job_seeker) }
+  let(:job_seeker2) { FactoryGirl.create(:job_seeker) }
+  let(:job_seeker3) { FactoryGirl.create(:job_seeker) }
+  let!(:resume)     { FactoryGirl.create(:resume, job_seeker: job_seeker) }
+  let!(:resume2)     { FactoryGirl.create(:resume, job_seeker: job_seeker2) }
   let(:invalid_application) { FactoryGirl.create(:job_application,
-                    job: job, job_seeker: job_seeker, status: 'accepted')}
+                    job: job, job_seeker: job_seeker2, status: 'accepted')}
+  let(:invalid_application2) { FactoryGirl.create(:job_application,
+                    job: job, job_seeker: job_seeker3, status: 'accepted')}
   let(:valid_application) { FactoryGirl.create(:job_application,
                     job: job, job_seeker: job_seeker) }
 
@@ -71,20 +76,21 @@ RSpec.describe JobApplicationsController, type: :controller do
   describe 'GET download_resume' do
     context 'Successful download' do
       it 'does not raise exception' do
+        stub_cruncher_file_download('files/Admin-Assistant-Resume.pdf')
         get :download_resume, id: valid_application
         expect(response).to_not set_flash
       end
     end
     context 'Error: Resume not found in DB' do
       it 'sets flash message' do
-        get :download_resume, id: valid_application
+        get :download_resume, id: invalid_application2
         expect(flash[:alert]).to eq 'Error: Resume not found in DB'
       end
     end
     context 'Error: Resume not found in Cruncher' do
       it 'sets flash message' do
         stub_cruncher_file_download_notfound
-        get :download_resume, id: valid_application
+        get :download_resume, id: invalid_application
         expect(flash[:alert]).to eq 'Error: Resume not found in Cruncher'
       end
     end
