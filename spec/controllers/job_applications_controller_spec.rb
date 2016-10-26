@@ -5,6 +5,7 @@ RSpec.describe JobApplicationsController, type: :controller do
 
   let(:job) { FactoryGirl.create(:job) }
   let(:job_seeker) { FactoryGirl.create(:job_seeker) }
+  let(:resume)     { FactoryGirl.create(:resume, job_seeker: job_seeker) }
   let(:invalid_application) { FactoryGirl.create(:job_application,
                     job: job, job_seeker: job_seeker, status: 'accepted')}
   let(:valid_application) { FactoryGirl.create(:job_application,
