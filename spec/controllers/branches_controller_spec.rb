@@ -5,7 +5,7 @@ RSpec.shared_examples "unauthorized" do
     warden.set_user user
     my_request
   end
-  
+
   it 'returns http unauthorized' do
     expect(response).to have_http_status(302)
   end
@@ -20,15 +20,6 @@ end
 RSpec.shared_examples "unauthorized all" do
   let(:agency) {FactoryGirl.create(:agency)}
   let(:company) {FactoryGirl.create(:company)}
-  context "Not logged in" do
-    subject{my_request}
-    it 'returns http redirect' do
-      expect(subject).to have_http_status(302)
-    end
-    it 'check redirect url' do
-      expect(subject).to redirect_to(root_path)
-   end
-   end
   context "Case Manager" do
     it_behaves_like "unauthorized" do
       let(:user) {FactoryGirl.create(:case_manager, agency: agency)}
@@ -39,14 +30,29 @@ RSpec.shared_examples "unauthorized all" do
       let(:user) {FactoryGirl.create(:job_developer, agency: agency)}
     end
   end
-  context "Job Seeker" do
-    it_behaves_like "unauthorized" do
-      let(:user) {FactoryGirl.create(:job_seeker)}
-    end
-  end
   context "Company admin" do
     it_behaves_like "unauthorized" do
       let(:user) {FactoryGirl.create(:company_admin, company: company)}
+    end
+  end
+  it_behaves_like "unauthorized all non-agency people"
+end
+
+RSpec.shared_examples "unauthorized all non-agency people" do
+  let(:agency) {FactoryGirl.create(:agency)}
+  let(:company) {FactoryGirl.create(:company)}
+  context "Not logged in" do
+    subject{my_request}
+    it 'returns http redirect' do
+      expect(subject).to have_http_status(302)
+    end
+    it 'check redirect url' do
+      expect(subject).to redirect_to(root_path)
+    end
+  end
+  context "Job Seeker" do
+    it_behaves_like "unauthorized" do
+      let(:user) {FactoryGirl.create(:job_seeker)}
     end
   end
   context "Company contact" do
@@ -55,6 +61,7 @@ RSpec.shared_examples "unauthorized all" do
     end
   end
 end
+
 
 
 RSpec.describe BranchesController, type: :controller do
@@ -70,24 +77,24 @@ RSpec.describe BranchesController, type: :controller do
 
 
   describe "GET #show" do
-    
+
     before(:each) do
       sign_in admin
       get :show, id: branch.id
     end
-    
+
     it 'assigns @branch for view' do
       expect(assigns(:branch)).to eq branch
-      
+
     end
-      
+
     it 'renders show template' do
       expect(response).to render_template('show')
     end
     it "returns http success" do
       expect(response).to have_http_status(:success)
     end
-        
+
   end
 
   describe "POST #create" do
@@ -157,7 +164,7 @@ RSpec.describe BranchesController, type: :controller do
   end
 
   describe "GET #edit" do
-    
+
     before(:each) do
       sign_in admin
       get :edit, id: branch.id
@@ -171,7 +178,7 @@ RSpec.describe BranchesController, type: :controller do
     it "returns http success" do
       expect(response).to have_http_status(:success)
     end
-    
+
   end
 
   describe "PATCH #update" do
@@ -227,7 +234,7 @@ RSpec.describe BranchesController, type: :controller do
   end
 
   describe "DELETE #destroy" do
-    
+
     before(:each) do
       sign_in admin
       delete :destroy, id: branch.id
@@ -238,10 +245,10 @@ RSpec.describe BranchesController, type: :controller do
     it "returns redirect status" do
       expect(response).to have_http_status(:redirect)
     end
-    
+
   end
 
-  
+
   describe 'action authorization' do
     context '#new' do
       it 'authorizes agency admin' do
@@ -276,9 +283,9 @@ RSpec.describe BranchesController, type: :controller do
         get :new, agency_id: agency
         expect(flash[:alert]).to eq "You are not authorized to create a branch."
       end
-                  
+
     end
-  
+
     context '#create' do
       it 'authorizes agency admin' do
         allow(controller).to receive(:current_user).and_return(admin)
@@ -310,11 +317,11 @@ RSpec.describe BranchesController, type: :controller do
         post :create, agency_id: agency
         expect(flash[:alert]).to eq "You are not authorized to create a branch."
       end
-     
+
     end
 
     context '#update' do
-      
+
       it 'authorizes agency admin' do
         allow(controller).to receive(:current_user).and_return(admin)
         patch :update, id: branch.id, branch: FactoryGirl.attributes_for(:branch)
@@ -429,10 +436,10 @@ RSpec.describe BranchesController, type: :controller do
       it_behaves_like "unauthorized all" do
         let(:my_request) {delete :destroy, id: branch.id}
       end
-           
+
     end
-      
-    
+
+
     context '#show' do
       it 'authorizes agency admin' do
         allow(controller).to receive(:current_user).and_return(admin)
@@ -467,10 +474,10 @@ RSpec.describe BranchesController, type: :controller do
         expect(flash[:alert]).
           to eq "You are not authorized to show the branch."
       end
-      
-    end 
 
-    
+    end
+
+
 
   end
 
@@ -478,31 +485,30 @@ RSpec.describe BranchesController, type: :controller do
     context '#new' do
       it_behaves_like "unauthorized all" do
        let(:my_request) {get :new, agency_id: agency}
-      end            
+      end
     end
     context '#create' do
       it_behaves_like "unauthorized all" do
        let(:my_request) {post :create, agency_id: agency, branch: FactoryGirl.attributes_for(:branch)}
-      end            
+      end
     end
     context '#edit' do
       it_behaves_like "unauthorized all" do
        let(:my_request) {get :edit, id: branch.id}
-      end            
+      end
     end
     context '#update' do
       it_behaves_like "unauthorized all" do
        let(:my_request) {patch :update, id: branch.id, branch: FactoryGirl.attributes_for(:branch)}
-      end            
+      end
     end
     context '#show' do
-      it_behaves_like "unauthorized all" do
+      it_behaves_like "unauthorized all non-agency people" do
        let(:my_request) {get :show, id: branch.id}
-      end            
+      end
     end
   end
-   
 
-  
+
+
 end
-
