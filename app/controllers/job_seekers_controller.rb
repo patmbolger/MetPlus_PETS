@@ -67,14 +67,14 @@ class JobSeekersController < ApplicationController
           resume = Resume.new(file: tempfile, file_name: filename,
                      job_seeker_id: @jobseeker.id)
         end
-        
+
         unless resume.save
           models_saved = false
           @jobseeker.errors.messages.merge! resume.errors.messages
         end
       end
     end
-   
+
     if models_saved
       sign_in :user, @jobseeker.user, bypass: true if pets_user == @jobseeker
       flash[:notice] = "Jobseeker was updated successfully."
@@ -107,7 +107,8 @@ class JobSeekersController < ApplicationController
     raise 'Unsupported request' if not request.xhr?
     @jobseeker = JobSeeker.find(params[:id])
     render partial: '/job_seekers/info', locals: { job_seeker: @jobseeker,
-                                                   preview_mode: true }
+                                                   preview_mode: true,
+                                                   offer_download: false}
   end
 
   def applied_jobs
