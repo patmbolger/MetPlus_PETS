@@ -23,7 +23,8 @@ module StarsRenderer
 
   def star_image(value)
     content_tag('i', nil,
-                class: ['fa', star_type(value)], 'aria-hidden': 'true')
+                class: ['fa', star_type(value)], 'aria-hidden': 'true') do
+    end
   end
 
   def star_type(value)
