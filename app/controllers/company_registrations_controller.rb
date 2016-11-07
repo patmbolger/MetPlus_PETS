@@ -100,7 +100,7 @@ class CompanyRegistrationsController < ApplicationController
     @company.active
     @company.save
 
-    company_person = company.company_people[0]
+    company_person = @company.company_people[0]
     company_person.active
     company_person.approved = true
     company_person.save

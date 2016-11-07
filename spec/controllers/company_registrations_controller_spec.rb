@@ -19,16 +19,16 @@ end
 
 RSpec.describe CompanyRegistrationsController, type: :controller do
 
-  let(:agency)          { FactoryGirl.create(:agency) }
-  let(:agency_admin)    { FactoryGirl.create(:agency_admin, agency: agency) }
+  let!(:agency)          { FactoryGirl.create(:agency) }
+  let!(:agency_admin)    { FactoryGirl.create(:agency_admin, agency: agency) }
 
   let(:agency_metplus)  { FactoryGirl.create(:agency, name: 'Metplus') }
   let(:metplus_admin)   { FactoryGirl.create(:agency_admin, agency: agency_metplus) }
 
-  let(:company)         { FactoryGirl.create(:company, agencies: [agency]) }
+  let!(:company)         { FactoryGirl.create(:company, agencies: [agency]) }
   let(:company_bayer)   { FactoryGirl.create(:company, name: 'Bayer-Raynor',
                             agencies: [agency_metplus]) }
-  let(:company_admin)   { FactoryGirl.create(:company_admin, company: company) }
+  let!(:company_admin)   { FactoryGirl.create(:company_admin, company: company) }
   let(:bayer_admin)     { FactoryGirl.create(:company_admin, company: company_bayer) }
 
   let(:jd) { FactoryGirl.create(:job_developer, agency: agency) }
@@ -154,7 +154,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
     let(:address1) { FactoryGirl.create(:address) }
     let(:address2) { FactoryGirl.create(:address, city: 'Detroit') }
     let!(:test_company) do
-      comp = FactoryGirl.build(:company)
+      comp = FactoryGirl.build(:company, agencies: [agency]) # <<<< fixed
       comp.company_people << company_admin
       comp.addresses << address1 << address2
       comp.save
@@ -163,17 +163,22 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
 
     let(:request) { delete :destroy, id: test_company }
 
-    let(:authorized_request) do
+    # let(:authorized_request) do
+    #   sign_in agency_admin
+    #   request
+    # end
+    before(:each) do
       sign_in agency_admin
-      request
     end
 
     context 'authorized access' do
       it 'delete company person(s)' do
-        expect { authorized_request }.to change(CompanyPerson, :count).by(-1)
+        expect { delete :destroy, id: test_company }
+                               .to change(CompanyPerson, :count).by(-1)
       end
       it 'delete company address(s)' do
-        expect { authorized_request }.to change(Address, :count).by(-2)
+        expect { delete :destroy, id: test_company }
+                               .to change(Address, :count).by(-2)
       end
     end
 
@@ -251,7 +256,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
       end
       it "sets company person status to Pending" do
         expect(assigns(:company).company_people[0].status).
-                            to eq CompanyPerson::STATUS[:PND]
+                            to eq 'company_pending'  # <<<< fixed
       end
       it "sets job_email on the model" do
         expect(Company.find_by_job_email(registration_params[:job_email])).not_to be nil
@@ -302,7 +307,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
   end
 
   describe "PATCH #approve" do
-    let!(:agency)   { FactoryGirl.create(:agency) }
+    # let!(:agency)   { FactoryGirl.create(:agency) }
 
     let!(:registration_params) do
       params = FactoryGirl.attributes_for(:company)
@@ -321,6 +326,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
       3.times do |n|
         FactoryGirl.create(:agency_person, agency: agency)
       end
+      sign_in agency_admin
       post :create, company: registration_params
     end
 
@@ -343,7 +349,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
   end
 
   describe "PATCH #deny" do
-    let!(:agency)   { FactoryGirl.create(:agency) }
+    # let!(:agency)   { FactoryGirl.create(:agency) }
 
     let!(:registration_params) do
       params = FactoryGirl.attributes_for(:company)
@@ -362,6 +368,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
       3.times do |n|
         FactoryGirl.create(:agency_person, agency: agency)
       end
+      sign_in agency_admin
       post :create, company: registration_params
     end
 
@@ -426,7 +433,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
 
     it 'updates person and address but does not add person or address' do
       # Change registration data for update
-      company = Company.find_by_name(prior_name)
+      company = Company.find_by_name(prior_name)  # << company has no addresses
 
       registration_params = FactoryGirl.attributes_for(:company,
                                       name: 'Sprockets Corporation',
