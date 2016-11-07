@@ -1,91 +1,216 @@
 require 'rails_helper'
 
+RSpec.shared_examples 'authorized show request' do
+  before do
+    sign_in user
+    request
+  end
+
+  it 'assigns @company for view' do
+    expect(assigns(:company)).to eq company
+  end
+  it 'renders show template' do
+    expect(response).to render_template(:show)
+  end
+  it "returns http success" do
+    expect(response).to have_http_status(:success)
+  end
+end
+
 RSpec.describe CompanyRegistrationsController, type: :controller do
+
+  let(:agency)          { FactoryGirl.create(:agency) }
+  let(:agency_admin)    { FactoryGirl.create(:agency_admin, agency: agency) }
+
+  let(:agency_metplus)  { FactoryGirl.create(:agency, name: 'Metplus') }
+  let(:metplus_admin)   { FactoryGirl.create(:agency_admin, agency: agency_metplus) }
+
+  let(:company)         { FactoryGirl.create(:company, agencies: [agency]) }
+  let(:company_bayer)   { FactoryGirl.create(:company, name: 'Bayer-Raynor',
+                            agencies: [agency_metplus]) }
+  let(:company_admin)   { FactoryGirl.create(:company_admin, company: company) }
+  let(:bayer_admin)     { FactoryGirl.create(:company_admin, company: company_bayer) }
+
+  let(:jd) { FactoryGirl.create(:job_developer, agency: agency) }
+  let(:cm) { FactoryGirl.create(:case_manager, agency: agency) }
+  let(:cc) { FactoryGirl.create(:company_contact) }
+  let(:js) { FactoryGirl.create(:job_seeker) }
 
   before(:each) do
     allow(Pusher).to receive(:trigger)  # stub and spy on 'Pusher'
   end
-  describe "GET #show" do
-    let(:company_person) do
-      cp = FactoryGirl.create(:company_person)
-      cp.company_roles << FactoryGirl.create(:company_role,
-                                role: CompanyRole::ROLE[:CA])
-      cp.save
-      cp
+
+  describe 'GET #show' do
+    let(:request) { get :show, id: company }
+    context 'authorized access' do
+      context 'agency admin' do
+        it_behaves_like 'authorized show request' do
+          let(:user) { agency_admin }
+        end
+      end
+
+      context 'company admin' do
+        it_behaves_like 'authorized show request' do
+          let(:user) { company_admin }
+        end
+      end
     end
 
-    let!(:company) do
-      comp = FactoryGirl.build(:company)
-      comp.company_people << company_person
-      comp.save
-      comp
+    context 'unauthenticated access' do
+      it_behaves_like 'unauthenticated request'
     end
 
-    before(:each) do
-      get :show, id: company
+    context 'unauthorized access' do
+      context 'agency admin not associated with the company' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { metplus_admin }
+        end
+      end
+
+      context 'company admin not associated with the company' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { metplus_admin }
+        end
+      end
+
+      context 'unauthorized agency people' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cm }
+        end
+        it_behaves_like 'unauthorized request' do
+          let(:user) { jd }
+        end
+      end
+
+      context 'company contact' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cc }
+        end
+      end
+
+      context 'Job Seeker' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { js }
+        end
+      end
     end
-    it 'assigns @company for view' do
-      expect(assigns(:company)).to eq company
-    end
-    it 'renders show template' do
-      expect(response).to render_template('show')
-    end
-    it "returns http success" do
-      expect(response).to have_http_status(:success)
-    end
+
   end
 
   describe "DELETE #destroy" do
-    let(:company_person) do
-      cp = FactoryGirl.create(:company_person)
-      cp.company_roles << FactoryGirl.create(:company_role,
-                                role: CompanyRole::ROLE[:CA])
-      cp.save
-      cp
-    end
-    let!(:company) do
-      comp = FactoryGirl.build(:company)
-      comp.company_people << company_person
-      comp.save
-      comp
+    let(:request) { delete :destroy, id: company }
+    context 'authorized access' do
+      before do
+        sign_in agency_admin
+        request
+      end
+      it 'sets flash message' do
+        expect(flash[:notice]).
+            to eq "Registration for '#{company.name}' deleted."
+      end
+      it "returns redirect status" do
+        expect(response).to have_http_status(:redirect)
+      end
     end
 
-    before(:each) do
-      delete :destroy, id: company
+    context 'unauthenticated access' do
+      it_behaves_like 'unauthenticated request'
     end
-    it 'sets flash message' do
-      expect(flash[:notice]).
-          to eq "Registration for '#{company.name}' deleted."
-    end
-    it "returns redirect status" do
-      expect(response).to have_http_status(:redirect)
+
+    context 'unauthorized access' do
+      context 'agency admin not associated with the company' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { metplus_admin }
+        end
+      end
+
+      context 'unauthorized agency people' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cm }
+        end
+        it_behaves_like 'unauthorized request' do
+          let(:user) { jd }
+        end
+      end
+
+      context 'company people' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cc }
+        end
+        it_behaves_like 'unauthorized request' do
+          let(:user) { company_admin }
+        end
+      end
+
+      context 'Job Seeker' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { js }
+        end
+      end
     end
   end
 
   describe 'DELETE registration also deletes associated objects' do
-    let(:company_person) do
-      cp = FactoryGirl.create(:company_person)
-      cp.company_roles << FactoryGirl.create(:company_role,
-                                role: CompanyRole::ROLE[:CA])
-      cp.save
-      cp
-    end
     let(:address1) { FactoryGirl.create(:address) }
     let(:address2) { FactoryGirl.create(:address, city: 'Detroit') }
-    let!(:company) do
+    let!(:test_company) do
       comp = FactoryGirl.build(:company)
-      comp.company_people << company_person
+      comp.company_people << company_admin
       comp.addresses << address1 << address2
       comp.save
       comp
     end
-    it ' delete company person(s)' do
-      expect { delete :destroy, id: company }.
-          to change(CompanyPerson, :count).by(-1)
+
+    let(:request) { delete :destroy, id: test_company }
+
+    let(:authorized_request) do
+      sign_in agency_admin
+      request
     end
-    it ' delete company address(s)' do
-      expect { delete :destroy, id: company }.
-          to change(Address, :count).by(-2)
+
+    context 'authorized access' do
+      it 'delete company person(s)' do
+        expect { authorized_request }.to change(CompanyPerson, :count).by(-1)
+      end
+      it 'delete company address(s)' do
+        expect { authorized_request }.to change(Address, :count).by(-2)
+      end
+    end
+
+    context 'unauthenticated access' do
+      it_behaves_like 'unauthenticated request'
+    end
+
+    context 'unauthorized access' do
+      context 'agency admin not associated with the company' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { metplus_admin }
+        end
+      end
+
+      context 'unauthorized agency people' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cm }
+        end
+        it_behaves_like 'unauthorized request' do
+          let(:user) { jd }
+        end
+      end
+
+      context 'company people' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { cc }
+        end
+        it_behaves_like 'unauthorized request' do
+          let(:user) { company_admin }
+        end
+      end
+
+      context 'Job Seeker' do
+        it_behaves_like 'unauthorized request' do
+          let(:user) { js }
+        end
+      end
     end
   end
 
@@ -125,7 +250,8 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
         expect(assigns(:company).pending_registration?).to be true
       end
       it "sets company person status to Pending" do
-        expect(assigns(:company).company_people[0].company_pending?).to be true
+        expect(assigns(:company).company_people[0].status).
+                            to eq CompanyPerson::STATUS[:PND]
       end
       it "sets job_email on the model" do
         expect(Company.find_by_job_email(registration_params[:job_email])).not_to be nil

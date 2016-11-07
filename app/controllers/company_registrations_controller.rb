@@ -2,6 +2,7 @@ class CompanyRegistrationsController < ApplicationController
   include UserParameters
   include CompanyPeopleViewer
 
+  before_action :user_logged!, except: [:new, :create]
   before_action :load_and_authorize_company, except: [:new, :create]
 
   def new
@@ -11,13 +12,13 @@ class CompanyRegistrationsController < ApplicationController
   end
 
   def show
-    authorize company_registration@company)
+    authorize company_registration(@company)
     @company_admins = Company.company_admins(@company)
     @people_type    = 'company-all'
   end
 
   def destroy
-    authorize company_registration@company), :update?
+    authorize company_registration(@company), :update?
     @company.destroy
     flash[:notice] = "Registration for '#{@company.name}' deleted."
     redirect_to root_path
@@ -56,12 +57,12 @@ class CompanyRegistrationsController < ApplicationController
   end
 
   def edit
-    authorize company_registration@company), :update?
+    authorize company_registration(@company), :update?
     @company.build_address unless @company.addresses
   end
 
   def update
-    authorize company_registration@company)
+    authorize company_registration(@company)
     reg_params = company_params
     reg_params[:company_people_attributes]['0'] = handle_user_form_parameters reg_params[:company_people_attributes]['0']
 
@@ -94,7 +95,7 @@ class CompanyRegistrationsController < ApplicationController
     # Approve the company's registration request.
     # There should be only one CompanyPerson associated with the company -
     # this is the 'company contact' included in the registration request.
-    authorize company_registration@company), :update?
+    authorize company_registration(@company), :update?
     @company = Company.find(params[:id])
     @company.active
     @company.save
@@ -116,7 +117,7 @@ class CompanyRegistrationsController < ApplicationController
 
   def deny
     # Deny the company's registration request.
-    authorize company_registration@company), :update?
+    authorize company_registration(@company), :update?
     company = Company.find(params[:id])
 
     company.registration_denied
@@ -136,10 +137,10 @@ class CompanyRegistrationsController < ApplicationController
   private
 
   def company_registration company
-    CompanyRegistration.new companycompany_registration
+    CompanyRegistration.new company
   end
 
-  )def load_and_authorize_company
+  def load_and_authorize_company
     begin
       @company = Company.find(params[:id])
     rescue ActiveRecord::RecordNotFound
