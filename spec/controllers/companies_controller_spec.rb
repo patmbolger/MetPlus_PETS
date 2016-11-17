@@ -183,42 +183,63 @@ RSpec.describe CompaniesController, type: :controller do
       it_behaves_like 'unauthorized agency people and jobseeker' do
         let(:my_request) { get :edit, id: company }
       end
+
+      # CHANGES
+      it_behaves_like 'unauthorized' do
+        let(:my_request) { get :edit, id: company }
+        let(:user) { company_contact }
+      end
+
     end
     context '#update' do
+      # CHANGES
+      let(:params_hash) do
+        attributes_for(:company,
+                       email: 'info@widgets.com', fax: '510 555-1212',
+                       job_email: 'humanresources@widgets.com')
+                    .merge(addresses_attributes:
+                    { '0' => attributes_for(:address),
+                      '1' => attributes_for(:address) })
+      end
       it 'authorizes company admin' do
         allow(controller).to receive(:current_user).and_return(company_admin)
-        params_hash = attributes_for(:company,
-                                     email: 'info@widgets.com', fax: '510 555-1212',
-                                     job_email: 'humanresources@widgets.com')
-                      .merge(addresses_attributes:
-                         { '0' => attributes_for(:address),
-                           '1' => attributes_for(:address) })
+        # params_hash = attributes_for(:company,
+        #                              email: 'info@widgets.com', fax: '510 555-1212',
+        #                              job_email: 'humanresources@widgets.com')
+        #               .merge(addresses_attributes:
+        #                  { '0' => attributes_for(:address),
+        #                    '1' => attributes_for(:address) })
 
         patch :update, id: company, company: params_hash
         expect(subject).to_not receive(:user_not_authorized)
       end
       it 'authorizes agency admin' do
         allow(controller).to receive(:current_user).and_return(admin)
-        params_hash = attributes_for(:company,
-                                     email: 'info@widgets.com', fax: '510 555-1212',
-                                     job_email: 'humanresources@widgets.com')
-                      .merge(addresses_attributes:
-                         { '0' => attributes_for(:address),
-                           '1' => attributes_for(:address) })
+        # params_hash = attributes_for(:company,
+        #                              email: 'info@widgets.com', fax: '510 555-1212',
+        #                              job_email: 'humanresources@widgets.com')
+        #               .merge(addresses_attributes:
+        #                  { '0' => attributes_for(:address),
+        #                    '1' => attributes_for(:address) })
 
         patch :update, id: company, company: params_hash
         expect(subject).to_not receive(:user_not_authorized)
       end
       it_behaves_like 'unauthorized agency people and jobseeker' do
         let(:my_request) do
-          params_hash = attributes_for(:company,
-                                       email: 'info@widgets.com', fax: '510 555-1212',
-                                       job_email: 'humanresources@widgets.com')
-                        .merge(addresses_attributes:
-                        { '0' => attributes_for(:address),
-                          '1' => attributes_for(:address) })
+          # params_hash = attributes_for(:company,
+          #                              email: 'info@widgets.com', fax: '510 555-1212',
+          #                              job_email: 'humanresources@widgets.com')
+          #               .merge(addresses_attributes:
+          #               { '0' => attributes_for(:address),
+          #                 '1' => attributes_for(:address) })
           patch :update, id: company, company: params_hash
         end
+      end
+      # CHANGES
+      it_behaves_like 'unauthorized' do
+        let(:my_request) { patch :update, id: company, company: params_hash }
+        let(:user) { company_contact }
       end
     end
     context '#show' do
@@ -236,6 +257,11 @@ RSpec.describe CompaniesController, type: :controller do
       it_behaves_like 'unauthorized agency people and jobseeker' do
         let(:my_request) { get :show, id: company }
       end
+      # CHANGES
+      it_behaves_like 'unauthorized' do
+        let(:my_request) { get :show, id: company }
+        let(:user) { company_contact }
+      end
     end
     context '#destroy' do
       it 'authorizes agency admin' do
@@ -250,6 +276,12 @@ RSpec.describe CompaniesController, type: :controller do
 
       it_behaves_like 'unauthorized all' do
         let(:my_request) { delete :destroy, id: company }
+      end
+
+      # CHANGES
+      it_behaves_like 'unauthorized' do
+        let(:my_request) { delete :destroy, id: company }
+        let(:user) { company_contact }
       end
     end
     context '#list-people' do
