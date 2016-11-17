@@ -15,6 +15,8 @@ src_files:
   - https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js
   - https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.7/moment-timezone-with-data.min.js
   - https://code.jquery.com/jquery-2.2.4.min.js
+  - https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js
+
 
 # stylesheets
 #
