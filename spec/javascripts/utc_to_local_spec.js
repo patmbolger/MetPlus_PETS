@@ -6,25 +6,24 @@ describe('Convert UTC to local Time', function () {
   // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
   it('New York', function () {
-    spyOn(moment.tz, 'guess').and.returnValue('America/New_York')
+    // set local timezone so "moment.tz.guess()"" will detect that, or,
+    // stub "moment.tz.guess()" function to return a specific timezone string
+    // (see timezone strings in above link)
+    // here. we want to use timezone 'America/New_York'
 
     utcToLocal.setup();  // convert UTC time to local time in the DOM
     ele = $('.utc_to_local_time')[0]  // Get the converted span element
 
-    expect($(ele).text()).toEqual('November 7, 2016 1:04 PM');
+    // test that timezone in the DOM is equal to expected timezone
+    // hint: use $('ele').text()
   });
 
   it('Johannesburg', function () {
-    spyOn(moment.tz, 'guess').and.returnValue('Africa/Johannesburg')
-    utcToLocal.setup();
-    ele = $('.utc_to_local_time')[0]
-    expect($(ele).text()).toEqual('November 7, 2016 8:04 PM');
+    // tz = 'Africa/Johannesburg'
+
   });
 
   it('London', function () {
-    spyOn(moment.tz, 'guess').and.returnValue('Europe/London')
-    utcToLocal.setup();
-    ele = $('.utc_to_local_time')[0]
-    expect($(ele).text()).toEqual('November 7, 2016 6:04 PM');
+    // tz = 'Europe/London'
   });
 });
