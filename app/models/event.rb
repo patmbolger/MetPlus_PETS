@@ -396,12 +396,12 @@ class Event
                      evt_obj.job)
     end
     job_apps = evt_obj.job.job_applications
-    
+
     unless job_apps.empty?
-     
+
       js_emails = job_apps.map { |ja| ja.job_seeker.email}
-      js_ids     = job_apps.map { |ja| ja.job_seeker.id}
-      
+      js_ids     = job_apps.map { |ja| ja.job_seeker.user.id}
+
 
       Pusher.trigger('pusher_control',
                      EVT_TYPE[:JOB_REVOKED],
@@ -415,7 +415,7 @@ class Event
                      EVT_TYPE[:JOB_REVOKED],
                      evt_obj.job)
     end
-   
+
    end
 
   def self.notify_list_for_js_apply_event(appl)

@@ -38,6 +38,7 @@ RSpec.describe Event, type: :model do
     allow(Pusher).to receive(:trigger)  # stub and spy on 'Pusher'
     stub_cruncher_authenticate
     stub_cruncher_job_create
+    stub_cruncher_file_download(testfile_resume)
 
     3.times do |n|
       FactoryGirl.create(:agency_person, agency: agency)
@@ -328,7 +329,7 @@ RSpec.describe Event, type: :model do
   end
 
   describe 'job_revoked event' do
-    
+
     it 'triggers mass Pusher message' do
       Event.create(:JOB_REVOKED, evt_obj_jobpost)
 
@@ -339,13 +340,14 @@ RSpec.describe Event, type: :model do
                 job_title: job.title,
                 company_name: company.name,
                 notify_list: [job_developer.user.id]})
-     
+
     end
     it 'sends mass event notification email' do
       expect { Event.create(:JOB_REVOKED, evt_obj_jobpost) }.
           to change(all_emails, :count).by(+1)
     end
     it 'triggers mass Pusher message to js' do
+      application
       Event.create(:JOB_REVOKED, evt_obj_jobpost)
 
       expect(Pusher).to have_received(:trigger).
@@ -355,17 +357,17 @@ RSpec.describe Event, type: :model do
                 job_title: job.title,
                 company_name: company.name,
                 notify_list: [job_seeker.user.id]})
-     
+
     end
     it 'sends mass event notification email' do
       expect { Event.create(:JOB_REVOKED, evt_obj_jobpost) }.
           to change(all_emails, :count).by(+1)
     end
 
-    
-    
-    
-    
+
+
+
+
   end
 
 
