@@ -5,10 +5,14 @@ class JobSeekersController < ApplicationController
   def new
     @jobseeker = JobSeeker.new
     authorize @jobseeker
+    @jobseeker.build_address   # <<<<<
   end
 
   def create
     jobseeker_params = form_params
+    jobseeker_params.delete 'address_attributes' if
+      address_is_empty?(jobseeker_params)
+
     dispatch_file    = jobseeker_params.delete 'resume'
 
     @jobseeker = JobSeeker.new(jobseeker_params)
@@ -35,6 +39,7 @@ class JobSeekersController < ApplicationController
       'to your email address. Please follow the link to activate your account.'
       redirect_to root_path
     else
+      @jobseeker.build_address unless @jobseeker.address.present? # <<<<<<
       render 'new'
     end
   end
@@ -42,16 +47,19 @@ class JobSeekersController < ApplicationController
   def edit
     @jobseeker = JobSeeker.find(params[:id])
     authorize @jobseeker
-    @jobseeker.build_address unless @jobseeker.address.present?
+    @jobseeker.build_address unless @jobseeker.address.present? # <<<<<<
     @current_resume = @jobseeker.resumes[0]
   end
 
   def update
     @jobseeker = JobSeeker.find(params[:id])
     authorize @jobseeker
+
     jobseeker_params = handle_user_form_parameters(permitted_attributes(@jobseeker))
     dispatch_file    = jobseeker_params.delete 'resume'
-    jobseeker_params.delete 'address_attributes' if address_is_empty?
+
+    jobseeker_params.delete 'address_attributes' if
+      address_is_empty?(jobseeker_params)
 
     models_saved = @jobseeker.update_attributes(jobseeker_params)
 
@@ -86,6 +94,7 @@ class JobSeekersController < ApplicationController
       redirect_to root_path
     else
       @resume = resume
+      @jobseeker.build_address unless @jobseeker.address.present?  # <<<<<
       render 'edit'
     end
   end
@@ -162,8 +171,8 @@ class JobSeekersController < ApplicationController
 
   private
 
-  def address_is_empty?
-    address = form_params[:address_attributes]
+  def address_is_empty?(params)
+    address = params[:address_attributes]
     address[:street].empty? && address[:city].empty? && address[:state].empty?
   end
 
