@@ -224,6 +224,7 @@ Scenario: Case manager assigns self to job seeker
   Given I am on the home page
   And I login as "jane@metplus.org" with password "qwerty123"
   Then I should see "Signed in successfully."
+  And I wait 2 seconds
   And I should see "Seeker, Sam" after "Job Seekers without a Case Manager"
   And I click the "Seeker, Sam" link
   And I wait 1 second
