@@ -1,6 +1,7 @@
 class AgencyPerson < ActiveRecord::Base
-  acts_as :user
+  has_one :user, as: :person, dependent: :destroy
 
+  delegate :acting_as, :email, :first_name=, :last_name=, :full_name, to: :user
 
   belongs_to :agency
   belongs_to :branch
@@ -13,6 +14,8 @@ class AgencyPerson < ActiveRecord::Base
   has_many :status_changes, as: :entity, dependent: :destroy
 
   validates_presence_of :agency_id
+
+  validates_presence_of :user
 
   validate :not_removing_sole_agency_admin, on: :update
 

@@ -1,5 +1,8 @@
 class CompanyPerson < ActiveRecord::Base
-  acts_as :user
+  has_one :user, as: :person, dependent: :destroy
+
+  delegate :acting_as, :email, to: :user
+
   belongs_to :company
   belongs_to :address
   has_and_belongs_to_many :company_roles,
@@ -10,6 +13,8 @@ class CompanyPerson < ActiveRecord::Base
   has_many :status_changes, as: :entity, dependent: :destroy
 
   has_many :jobs, dependent: :nullify
+
+  validates_presence_of :user
 
   validate :not_removing_sole_company_admin, on: :update
 

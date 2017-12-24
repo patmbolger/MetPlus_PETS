@@ -17,6 +17,7 @@ RSpec.describe AgencyPerson, type: :model do
     }
     it { is_expected.to have_many(:job_seekers).through(:agency_relations) }
     it { is_expected.to have_many(:status_changes) }
+    it { is_expected.to have_one(:user).dependent(:destroy) }
   end
 
   describe 'Database schema' do
@@ -89,25 +90,15 @@ RSpec.describe AgencyPerson, type: :model do
   end
 
   describe 'Agency Person' do
+    let(:user) { FactoryBot.build(:user) }
+
     it 'is valid with all required fields' do
-      expect(AgencyPerson.new(agency_id: 1,
-                              email: 'agencyperson2@gmail.com', first_name: 'Agency',
-                              last_name: 'Person', password: 'qwerty123')).to be_valid
+      expect(AgencyPerson.new(agency_id: 1, user: user)).to be_valid
     end
     it 'is invalid without an agency association' do
       agency = AgencyPerson.new
       agency.valid?
       expect(agency.errors[:agency_id]).to include("can't be blank")
-    end
-    context '#acting_as?' do
-      it 'returns true for supermodel class and name' do
-        expect(AgencyPerson.acting_as?(:user)).to be true
-        expect(AgencyPerson.acting_as?(User)).to  be true
-      end
-      it 'returns false for anything other than supermodel' do
-        expect(AgencyPerson.acting_as?(:model)).to be false
-        expect(AgencyPerson.acting_as?(String)).to be false
-      end
     end
   end
 

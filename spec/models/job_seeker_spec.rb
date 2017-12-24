@@ -8,12 +8,32 @@ describe JobSeeker, type: :model do
       expect(FactoryBot.create(:job_seeker)).to be_valid
     end
   end
+
   describe 'Database schema' do
     it { is_expected.to have_db_column :year_of_birth }
     it { is_expected.to have_db_column :job_seeker_status_id }
     it { is_expected.not_to have_db_column :address_id }
     it { is_expected.to have_db_column :consent }
   end
+
+  describe 'Associations' do
+    it { is_expected.to have_one(:user).dependent(:destroy) }
+    it { is_expected.to have_many(:resumes).dependent(:destroy) }
+    it { is_expected.to have_one(:address).dependent(:destroy) }
+    it { is_expected.to accept_nested_attributes_for(:address) }
+    it { is_expected.to have_many(:agency_relations) }
+    it do
+      is_expected.to have_many(:agency_people).through(:agency_relations)
+        .dependent(:destroy)
+    end
+    it { is_expected.to have_many(:job_applications) }
+    it do
+      is_expected.to have_many(:jobs).through(:job_applications)
+        .dependent(:destroy)
+    end
+    it { is_expected.to belong_to(:job_seeker_status) }
+  end
+
   describe 'check model restrictions' do
     it { is_expected.to validate_presence_of(:year_of_birth) }
     it { is_expected.to validate_presence_of(:job_seeker_status) }
@@ -98,17 +118,6 @@ describe JobSeeker, type: :model do
     end
   end
 
-  context '#acting_as?' do
-    it 'returns true for supermodel class and name' do
-      expect(JobSeeker.acting_as?(:user)).to be true
-      expect(JobSeeker.acting_as?(User)).to  be true
-    end
-
-    it 'returns false for anything other than supermodel' do
-      expect(JobSeeker.acting_as?(:model)).to be false
-      expect(JobSeeker.acting_as?(String)).to be false
-    end
-  end
   describe '#is_job_seeker?' do
     let(:person) { FactoryBot.create(:job_seeker) }
     it 'true' do

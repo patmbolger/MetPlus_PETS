@@ -1,5 +1,6 @@
 class JobSeeker < ActiveRecord::Base
-  acts_as :user
+  has_one :user, as: :person, dependent: :destroy
+
   has_many :resumes, dependent: :destroy
 
   has_one :address, as: :location, dependent: :destroy
@@ -8,18 +9,19 @@ class JobSeeker < ActiveRecord::Base
   has_many   :agency_relations
   has_many   :agency_people, through: :agency_relations, dependent: :destroy
 
-  validates_presence_of :year_of_birth
   has_many   :job_applications
   has_many   :jobs, through: :job_applications, dependent: :destroy
 
-  validates  :year_of_birth, year_of_birth: true
-
   belongs_to :job_seeker_status
+
+  validates_presence_of :user
+  validates_presence_of :year_of_birth
+  validates  :year_of_birth, year_of_birth: true
   validates_presence_of :job_seeker_status
 
   scope :consent, -> { where(consent: true) }
 
-  delegate :unconfirmed_email, to: :user
+  delegate :unconfirmed_email, :full_name, :first_name=, :last_name=, to: :user
 
   def status
     job_seeker_status
@@ -67,13 +69,13 @@ class JobSeeker < ActiveRecord::Base
 
   def self.job_seekers_without_job_developer
     where.not(id: AgencyRelation.in_role_of(:JD).pluck(:job_seeker_id))
-         .includes(:job_seeker_status, :job_applications)
+         .includes(:job_seeker_status, :job_applications, :user)
          .order('users.last_name')
   end
 
   def self.job_seekers_without_case_manager
     where.not(id: AgencyRelation.in_role_of(:CM).pluck(:job_seeker_id))
-         .includes(:job_seeker_status, :job_applications)
+         .includes(:job_seeker_status, :job_applications, :user)
          .order('users.last_name')
   end
 
