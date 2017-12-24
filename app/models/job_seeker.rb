@@ -1,6 +1,9 @@
 class JobSeeker < ActiveRecord::Base
   has_one :user, as: :person, dependent: :destroy
 
+  delegate :unconfirmed_email, :actable, :full_name,
+           :first_name, :last_name, :first_name=, :last_name=, :email, to: :user
+
   has_many :resumes, dependent: :destroy
 
   has_one :address, as: :location, dependent: :destroy
@@ -20,8 +23,6 @@ class JobSeeker < ActiveRecord::Base
   validates_presence_of :job_seeker_status
 
   scope :consent, -> { where(consent: true) }
-
-  delegate :unconfirmed_email, :full_name, :first_name=, :last_name=, to: :user
 
   def status
     job_seeker_status

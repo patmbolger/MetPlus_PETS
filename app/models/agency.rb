@@ -32,7 +32,7 @@ class Agency < ActiveRecord::Base
 
   # MULTIPLE AGENCIES: the code below needs to change
   def self.all_agency_people_emails
-    first.agency_people.pluck(:email)
+    first.agency_people.includes(:user).pluck('users.email')
   end
   ###################################################
 

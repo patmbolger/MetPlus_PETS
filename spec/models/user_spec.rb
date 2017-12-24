@@ -14,8 +14,8 @@ RSpec.describe User, type: :model do
     it { is_expected.to have_db_column :last_name }
     it { is_expected.to have_db_column :email }
     it { is_expected.to have_db_column :phone }
-    it { is_expected.to have_db_column :actable_id }
-    it { is_expected.to have_db_column :actable_type }
+    it { is_expected.to have_db_column :person_id }
+    it { is_expected.to have_db_column :person_type }
 
     it { is_expected.to have_db_column :encrypted_password }
     it { is_expected.to have_db_column :reset_password_token }
@@ -174,7 +174,8 @@ RSpec.describe User, type: :model do
   end
   describe '#full_name' do
     it 'returns full name of user' do
-      agency_person = FactoryBot.build(:agency_person)
+      user = FactoryBot.build(:user)
+      agency_person = FactoryBot.build(:agency_person, user: user)
       expect(agency_person.full_name)
         .to eq "#{agency_person.last_name}, #{agency_person.first_name}"
       expect(agency_person.full_name(last_name_first: false))
