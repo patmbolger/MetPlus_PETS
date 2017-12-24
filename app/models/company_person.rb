@@ -1,7 +1,8 @@
 class CompanyPerson < ActiveRecord::Base
   has_one :user, as: :person, dependent: :destroy
 
-  delegate :acting_as, :email, :full_name, :first_name, :last_name, to: :user
+  delegate :acting_as, :email, :full_name, :first_name, :last_name,
+           :pets_user, to: :user
 
   belongs_to :company
   belongs_to :address

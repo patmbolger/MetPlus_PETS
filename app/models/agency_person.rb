@@ -4,7 +4,7 @@ class AgencyPerson < ActiveRecord::Base
   has_one :user, as: :person, dependent: :destroy
 
   delegate :acting_as, :actable, :email, :first_name, :last_name,
-           :first_name=, :last_name=, :full_name, to: :user
+           :first_name=, :last_name=, :full_name, :pets_user, to: :user
 
   belongs_to :agency
   belongs_to :branch

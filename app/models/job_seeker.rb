@@ -2,7 +2,8 @@ class JobSeeker < ActiveRecord::Base
   has_one :user, as: :person, dependent: :destroy
 
   delegate :unconfirmed_email, :actable, :full_name,
-           :first_name, :last_name, :first_name=, :last_name=, :email, to: :user
+           :first_name, :last_name, :first_name=, :last_name=, :email,
+           :pets_user, to: :user
 
   has_many :resumes, dependent: :destroy
 
