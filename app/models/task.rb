@@ -138,7 +138,6 @@ class Task < ActiveRecord::Base
   end
 
   def self.find_by_target_job_seeker_open(job_seeker)
-    debugger
     open_tasks.job_seeker_target job_seeker
   end
 

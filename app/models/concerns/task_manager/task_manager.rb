@@ -17,7 +17,7 @@ module TaskManager
         company = nil
         job = nil
         args.each do |arg|
-          person = arg if arg.is_a? User
+          person = arg if arg&.user
           job_application = arg if arg.is_a? JobApplication
           job = arg if arg.is_a? Job
           company = arg if arg.is_a? Company
