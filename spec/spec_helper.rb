@@ -29,10 +29,10 @@ include ServiceStubHelpers::EmailValidator
 include ServiceStubHelpers::RecaptchaValidator
 # WebMock config
 
-#  Uncomment to disable Webmock and access external services during test:
 # WebMock.disable!
+WebMock.enable!
 
-#  This allows non-mocked external service calls to proceed:
+#  Uncomment to allow non-mocked external service calls to proceed:
 WebMock.allow_net_connect!
 
 SimpleCov.start

@@ -289,6 +289,9 @@ module ServiceStubHelpers
   end
 
   module EmailValidator
+    def auth_header
+      "Basic #{Base64.strict_encode64('api:'+MAILGUN_PUBLIC_KEY).chomp}"
+    end
     def stub_email_validate_valid
       body_json = "{\n  \"address\": \"address@gmail.com\",
                     \n  \"did_you_mean\": null,
@@ -300,7 +303,8 @@ module ServiceStubHelpers
                        \n  }
                     \n}"
       stub_request(:get,
-                   %r{^#{EmailValidateService.service_url}/validate?.*})
+        %r{^https://#{EMAIL_VALIDATE_URL}/address/validate?.*})
+        .with(headers: { 'Authorization' => auth_header })
         .to_return(body: body_json)
     end
 
@@ -314,14 +318,18 @@ module ServiceStubHelpers
                        \n    \"local_part\": null
                        \n  }
                     \n}"
+
       stub_request(:get,
-                   %r{^#{EmailValidateService.service_url}/validate?.*})
+        %r{^https://#{EMAIL_VALIDATE_URL}/address/validate?.*})
+        .with(headers: { 'Authorization' => auth_header })
         .to_return(body: body_json)
+      a=1
     end
 
     def stub_email_validate_error
       stub_request(:get,
-                   %r{^#{EmailValidateService.service_url}/validate?.*})
+        %r{^https://#{EMAIL_VALIDATE_URL}/address/validate?.*})
+        .with(headers: { 'Authorization' => auth_header })
         .to_raise(RuntimeError)
     end
   end

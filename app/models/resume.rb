@@ -21,8 +21,7 @@ class Resume < ActiveRecord::Base
 
   # Valid MIME types for résumé files: pdf, doc, docx, pages
   MIMETYPES = ['application/pdf', 'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/x-iwork-pages-sffpages']
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
   def initialize(file: nil, file_name: nil, job_seeker_id: nil)
     super
