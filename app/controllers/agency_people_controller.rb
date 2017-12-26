@@ -290,11 +290,9 @@ class AgencyPeopleController < ApplicationController
   private
 
   def agency_person_params
-    params.require(:agency_person).permit(:first_name, :last_name, :email,
-                                          :branch_id, :phone,
-                                          agency_role_ids: [],
-                                          job_category_ids: [],
-                                          as_jd_job_seeker_ids: [],
-                                          as_cm_job_seeker_ids: [])
+    params.require(:agency_person)
+      .permit(:branch_id, agency_role_ids: [], job_category_ids: [],
+              as_jd_job_seeker_ids: [], as_cm_job_seeker_ids: [],
+              user_attributes: [:id, :first_name, :last_name, :email, :phone])
   end
 end

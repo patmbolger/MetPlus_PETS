@@ -27,10 +27,6 @@ class JobSeeker < ActiveRecord::Base
     job_seeker_status
   end
 
-  def is_job_seeker?
-    true
-  end
-
   def latest_application
     job_applications.order(:created_at).last
   end

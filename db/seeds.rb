@@ -181,41 +181,41 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
     last_name = Faker::Name.last_name
     email = create_email("#{first_name}#{last_name}")
     confirmed_at = Time.now
-    # debugger
-    cp = CompanyPerson.new(title: title, email: email, password: password,
-                           first_name: first_name,
-                           last_name: last_name,
-                           confirmed_at: confirmed_at,
+    user = User.create(email: email, password: password,
+                       first_name: first_name,
+                       last_name: last_name,
+                       confirmed_at: confirmed_at)
+
+    cp = CompanyPerson.new(title: title, user: user,
                            company_id: companies[n].id,
                            address_id: addresses[n].id,
                            status: 'active')
+
     cp.company_roles << CompanyRole.find_by_role(CompanyRole::ROLE[:CA])
     cp.save!
   end
 
   # Create a known company admin for dev/test purposes
+  user = User.create(email: 'hr@widgets.com', password: 'qwerty123',
+              first_name: 'Steve', last_name: 'Jobs', confirmed_at: Time.now)
   known_company_person = CompanyPerson.new(title: 'HR Director',
-                                           email: 'hr@widgets.com',
-                                           password: 'qwerty123',
-                                           first_name: 'Steve',
-                                           last_name: 'Jobs',
-                                           confirmed_at: Time.now,
                                            company_id: known_company.id,
                                            address_id: Address.find(1).id,
-                                           status: 'active')
+                                           status: 'active',
+                                           user: user)
   known_company_person.company_roles << CompanyRole.find_by_role(CompanyRole::ROLE[:CA])
   known_company_person.save!
 
   # Create a known company contact for dev/test purposes
+  user = User.create(email: 'finance@widgets.com', password: 'qwerty123',
+                     first_name: 'Mya', last_name: 'Cash', confirmed_at: Time.now)
+
   known_company_contact = CompanyPerson.new(title: 'Treasurer',
-                                            email: 'finance@widgets.com',
-                                            password: 'qwerty123',
-                                            first_name: 'Mya',
-                                            last_name: 'Cash',
-                                            confirmed_at: Time.now,
+                                            user: user,
                                             company_id: known_company.id,
                                             address_id: Address.find(1).id,
                                             status: 'active')
+
   known_company_contact.company_roles << CompanyRole.find_by_role(CompanyRole::ROLE[:CC])
   known_company_contact.save!
 
@@ -223,13 +223,14 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
   21.times do |n|
     first_name = FFaker::Name.first_name
     last_name = FFaker::Name.last_name
-    cp = CompanyPerson.new(title: FFaker::Job.title,
-                           email: create_email("#{first_name}#{last_name}"),
-                           password: 'qwerty123',
-                           first_name: FFaker::Name.first_name,
-                           last_name: FFaker::Name.last_name,
-                           phone: FFaker::PhoneNumber.short_phone_number,
-                           confirmed_at: Time.now,
+
+    user = User.create(email: create_email("#{first_name}#{last_name}"),
+                       password: 'qwerty123', first_name: first_name,
+                       last_name: last_name,
+                       phone: FFaker::PhoneNumber.short_phone_number,
+                       confirmed_at: Time.now)
+
+    cp = CompanyPerson.new(title: FFaker::Job.title, user:user,
                            company_id: known_company.id,
                            address_id: addresses[n].id,
                            status: 'active')
@@ -283,11 +284,12 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
   @jss3 = JobSeekerStatus.third
 
   # This JobSeeker is used in email previews too :-)
-  js1 = JobSeeker.create(first_name: 'Tom', last_name: 'Seeker',
-                         email: 'tomseekerpets@gmail.com', password: 'qwerty123',
-                         year_of_birth: '1980', phone: '111-222-3333',
-                         job_seeker_status: @jss1, confirmed_at: Time.now,
-                         address: create_address)
+  user = User.create(first_name: 'Tom', last_name: 'Seeker',
+                     email: 'tomseekerpets@gmail.com', password: 'qwerty123',
+                     phone: '111-222-3333', confirmed_at: Time.now)
+
+  js1 = JobSeeker.create(user: user, year_of_birth: '1980',
+                         job_seeker_status: @jss1, address: create_address)
 
   # Have this JS apply to every other known_company jobs
   Job.where(company: known_company).each do |job|
@@ -318,14 +320,14 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
     year_of_birth = 2016 - r.rand(100)
     job_seeker_status = jobseekerstatus[r.rand(3)]
 
-    job_seeker = JobSeeker.create(first_name: first_name,
-                                  last_name: last_name,
-                                  email: create_email("#{first_name}#{last_name}"),
-                                  password: password,
+    user = User.create(first_name: first_name,
+                       last_name: last_name, phone: phone,
+                       email: create_email("#{first_name}#{last_name}"),
+                       password: password, confirmed_at: Time.now)
+
+    job_seeker = JobSeeker.create(user: user,
                                   year_of_birth: year_of_birth,
                                   job_seeker_status: job_seeker_status,
-                                  phone: phone,
-                                  confirmed_at: Time.now,
                                   address: create_address)
 
     # Add job application for known_company
@@ -342,29 +344,40 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
     )
   end
 
-  js2 = JobSeeker.create(first_name: 'Mary', last_name: 'McCaffrey',
-                         email: 'marymacpets@gmail.com', password: 'qwerty123',
-                         year_of_birth: '1970', phone: '111-222-3333',
-                         job_seeker_status: @jss2, confirmed_at: Time.now,
+  user = User.create(first_name: 'Mary', last_name: 'McCaffrey',
+                     email: 'marymacpets@gmail.com', password: 'qwerty123',
+                     phone: '111-222-3333', confirmed_at: Time.now)
+
+  js2 = JobSeeker.create(user: user,
+                         year_of_birth: '1970',
+                         job_seeker_status: @jss2,
                          address: create_address)
 
-  js3 = JobSeeker.create(first_name: 'Frank', last_name: 'Williams',
-                         email: 'fwilliamspets@gmail.com', password: 'qwerty123',
-                         year_of_birth: '1970', phone: '111-222-3333',
-                         job_seeker_status: @jss3, confirmed_at: Time.now,
+  user = User.create(first_name: 'Frank', last_name: 'Williams',
+                     email: 'fwilliamspets@gmail.com', password: 'qwerty123',
+                     phone: '111-222-3333', confirmed_at: Time.now)
+
+  js3 = JobSeeker.create(user: user,
+                         year_of_birth: '1970',
+                         job_seeker_status: @jss3,
                          address: create_address)
 
-  js4 = JobSeeker.create(first_name: 'Henry', last_name: 'McCoy',
-                         email: 'hmccoypets@gmail.com', password: 'qwerty123',
-                         year_of_birth: '1970', phone: '111-222-3333',
-                         job_seeker_status: @jss3, confirmed_at: Time.now,
+  user = User.create(first_name: 'Henry', last_name: 'McCoy',
+                     email: 'hmccoypets@gmail.com', password: 'qwerty123',
+                     phone: '111-222-3333', confirmed_at: Time.now)
+
+  js4 = JobSeeker.create(user: user,
+                         year_of_birth: '1970',
+                         job_seeker_status: @jss3,
                          address: create_address)
 
-  JobSeeker.create(first_name: 'Mike', last_name: 'Smith',
-                   email: 'mike.smith@gmail.com',
-                   password: 'qwerty123', password_confirmation: 'qwerty123',
+  user = User.create(first_name: 'Mike', last_name: 'Smith',
+                     email: 'mike.smith@gmail.com', phone: '111-222-3333',
+                     password: 'qwerty123',
+                     confirmed_at: Time.now)
+
+  JobSeeker.create(user: user,
                    year_of_birth: '1990',
-                   confirmed_at: Time.now, phone: '111-222-3333',
                    job_seeker_status: @jss1,
                    address: create_address)
 
@@ -397,36 +410,49 @@ if Rails.env.development? || Rails.env.staging? || ENV['HEROKU_ENV'] == 'STAGING
 
   #-------------------------- Agency People -------------------------------
 
-  agency_aa = AgencyPerson.new(first_name: 'John', last_name: 'Smith',
+  user = User.create(first_name: 'John', last_name: 'Smith',
+                     email: ENV['ADMIN_EMAIL'],
+                     password: 'qwerty123', confirmed_at: Time.now)
+
+  agency_aa = AgencyPerson.new(user: user,
                                agency_id: agency.id,
-                               email: ENV['ADMIN_EMAIL'],
-                               password: 'qwerty123', confirmed_at: Time.now,
                                branch_id: agency.branches[0].id,
                                status: 'active')
+
   agency_aa.agency_roles << AgencyRole.find_by_role(AgencyRole::ROLE[:AA])
   agency_aa.save!
 
-  agency_cm_and_jd = AgencyPerson.new(first_name: 'Chet', last_name: 'Pitts',
-                                      agency_id: agency.id, email: 'chet@metplus.org',
-                                      password: 'qwerty123', confirmed_at: Time.now,
+  user = User.create(first_name: 'Chet', last_name: 'Pitts',
+                     email: 'chet@metplus.org',
+                     password: 'qwerty123', confirmed_at: Time.now)
+
+  agency_cm_and_jd = AgencyPerson.new(user: user,
+                                      agency_id: agency.id,
                                       branch_id: agency.branches[1].id,
                                       status: 'active')
+
   agency_cm_and_jd.agency_roles << AgencyRole.find_by_role(AgencyRole::ROLE[:CM])
   agency_cm_and_jd.agency_roles << AgencyRole.find_by_role(AgencyRole::ROLE[:JD])
   agency_cm_and_jd.save!
 
-  agency_jd = AgencyPerson.new(first_name: 'Jane', last_name: 'Doe',
-                               agency_id: agency.id, email: 'jane@metplus.org',
-                               password: 'qwerty123', confirmed_at: Time.now,
+  user = User.create(first_name: 'Jane', last_name: 'Doe',
+                     email: 'jane@metplus.org',
+                     password: 'qwerty123', confirmed_at: Time.now)
+
+  agency_jd = AgencyPerson.new(user: user,
+                               agency_id: agency.id,
                                branch_id: agency.branches[2].id,
                                status: 'active')
 
   agency_jd.agency_roles << AgencyRole.find_by_role(AgencyRole::ROLE[:JD])
   agency_jd.save!
 
-  agency_cm = AgencyPerson.new(first_name: 'Kevin', last_name: 'Caseman',
-                               agency_id: agency.id, email: 'kevin@metplus.org',
-                               password: 'qwerty123', confirmed_at: Time.now,
+  user = User.create(first_name: 'Kevin', last_name: 'Caseman',
+                     email: 'kevin@metplus.org',
+                     password: 'qwerty123', confirmed_at: Time.now)
+
+  agency_cm = AgencyPerson.new(user: user,
+                               agency_id: agency.id,
                                branch_id: agency.branches[2].id,
                                status: 'active')
 

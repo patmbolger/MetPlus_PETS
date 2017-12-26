@@ -29,8 +29,8 @@ RSpec.describe AgencyAdminController, type: :controller do
 
     context 'non agency person attempts access' do
       it 'prevents non agency access' do
-        sign_in agency_admin
-        agency_admin.update_attribute(:actable_type, nil)
+        sign_in agency_admin.user
+        agency_admin.user.update_attribute(:person_type, nil)
         get :home
         expect(flash[:notice])
           .to eq 'Current agency cannot be determined'
@@ -38,7 +38,7 @@ RSpec.describe AgencyAdminController, type: :controller do
     end
     context 'controller actions and helper - home page' do
       before(:each) do
-        sign_in agency_admin
+        sign_in agency_admin.user
         get :home
       end
       it 'assigns agency for view' do
@@ -57,7 +57,7 @@ RSpec.describe AgencyAdminController, type: :controller do
 
     context 'controller actions and helper - job properties page' do
       before(:each) do
-        sign_in agency_admin
+        sign_in agency_admin.user
         get :job_properties
       end
       it 'assigns job_categories for view' do
@@ -80,7 +80,7 @@ RSpec.describe AgencyAdminController, type: :controller do
         cmp.agencies << agency
         cmp.save
       end
-      sign_in agency_admin
+      sign_in agency_admin.user
       get :home
     end
 
@@ -109,7 +109,7 @@ RSpec.describe AgencyAdminController, type: :controller do
       25.times do |n|
         FactoryBot.create(:job_category, name: "CAT#{n}")
       end
-      sign_in agency_admin
+      sign_in agency_admin.user
       get :job_properties
     end
 
@@ -139,31 +139,31 @@ RSpec.describe AgencyAdminController, type: :controller do
     end
 
     it 'this agency - from agency admin' do
-      sign_in agency_admin
+      sign_in agency_admin.user
       expect(Agency.this_agency(subject.current_user)).to eq agency
     end
     it 'this agency - from case manager' do
-      sign_in case_manager
+      sign_in case_manager.user
       expect(Agency.this_agency(subject.current_user)).to eq agency
     end
     it 'this agency - from job developer' do
-      sign_in job_developer
+      sign_in job_developer.user
       expect(Agency.this_agency(subject.current_user)).to eq agency
     end
     it 'non-admin and non-agency returns nil' do
-      sign_in job_seeker
+      sign_in job_seeker.user
       expect(Agency.this_agency(job_seeker)).to eq nil
     end
     it 'agency admin - from agency admin' do
-      sign_in agency_admin
+      sign_in agency_admin.user
       expect(Agency.agency_admins(agency)).to eq [agency_admin]
     end
     it 'agency admin - from case manager' do
-      sign_in case_manager
+      sign_in case_manager.user
       expect(Agency.agency_admins(agency)).to eq [agency_admin]
     end
     it 'agency admin - from job developer' do
-      sign_in job_developer
+      sign_in job_developer.user
       expect(Agency.agency_admins(agency)).to eq [agency_admin]
     end
   end
@@ -172,11 +172,11 @@ RSpec.describe AgencyAdminController, type: :controller do
     context '.home' do
       it 'authorizes agency_admin' do
         expect(subject).to_not receive(:user_not_authorized)
-        sign_in agency_admin
+        sign_in agency_admin.user
         get :home
       end
       it 'does not authorize non-admin user' do
-        sign_in case_manager
+        sign_in case_manager.user
         get :home
         expect(flash[:alert])
           .to eq "You are not authorized to administer #{agency.name} agency."
@@ -186,11 +186,11 @@ RSpec.describe AgencyAdminController, type: :controller do
     context '.job_properties' do
       it 'authorizes agency_admin' do
         expect(subject).to_not receive(:user_not_authorized)
-        sign_in agency_admin
+        sign_in agency_admin.user
         expect { get :job_properties }.to_not raise_error
       end
       it 'does not authorize non-admin user' do
-        sign_in case_manager
+        sign_in case_manager.user
         get :job_properties
         expect(flash[:alert])
           .to eq "You are not authorized to administer #{agency.name} agency."

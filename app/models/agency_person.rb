@@ -2,6 +2,7 @@ class AgencyPerson < ActiveRecord::Base
   include UserDelegates
 
   has_one :user, as: :person, dependent: :destroy
+  accepts_nested_attributes_for :user
 
   belongs_to :agency
   belongs_to :branch
@@ -138,11 +139,6 @@ class AgencyPerson < ActiveRecord::Base
     return false if self.agency != agency
     has_role?(:AA)
   end
-
-  def is_agency_person? agency
-    self.agency == agency
-  end
-
 
   private
   def has_role? role

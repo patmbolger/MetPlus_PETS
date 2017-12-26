@@ -1,5 +1,6 @@
 require 'rails_helper'
 include JobSeekersViewer
+include ServiceStubHelpers::Cruncher
 
 RSpec.describe AgencyPeopleController, type: :controller do
   let!(:agency)    { FactoryBot.create(:agency) }
@@ -19,7 +20,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
     before(:each) do
       adam.assign_job_developer(jd_person, agency)
       bob.assign_case_manager(cm_person, agency)
-      sign_in jd_person
+      sign_in jd_person.user
       get :home, id: jd_person
     end
 
@@ -38,7 +39,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
       before(:each) do
         adam.assign_job_developer(jd_person, agency)
         bob.assign_case_manager(cm_person, agency)
-        sign_in jd_person
+        sign_in jd_person.user
         get :home, id: jd_person
       end
 
@@ -55,7 +56,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
       before(:each) do
         adam.assign_job_developer(jd_person, agency)
         bob.assign_case_manager(cm_person, agency)
-        sign_in cm_person
+        sign_in cm_person.user
         get :home, id: cm_person
       end
 
@@ -71,7 +72,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #show' do
     before(:each) do
-      sign_in jd_person
+      sign_in jd_person.user
       get :show, id: jd_person.id
     end
 
@@ -88,7 +89,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #edit' do
     before(:each) do
-      sign_in aa_person
+      sign_in aa_person.user
       get :edit, id: jd_person
     end
 
@@ -118,11 +119,11 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
     context 'valid attributes' do
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.user.attributes)
+        person_hash = aa_person.attributes.merge(aa_person.attributes)
         person_hash[:agency_role_ids] = [aa_role.id.to_s]
         person_hash[:as_jd_job_seeker_ids] = []
         person_hash[:as_cm_job_seeker_ids] = []
-        sign_in aa_person
+        sign_in aa_person.user
         patch :update, id: aa_person,
                        agency_person: person_hash
       end
@@ -146,11 +147,11 @@ RSpec.describe AgencyPeopleController, type: :controller do
       render_views
 
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.user.attributes)
+        person_hash = aa_person.attributes.merge(aa_person.attributes)
         person_hash[:agency_role_ids] = []
         person_hash[:as_jd_job_seeker_ids] = []
         person_hash[:as_cm_job_seeker_ids] = []
-        sign_in aa_person
+        sign_in aa_person.user
         patch :update, id: aa_person, agency_person: person_hash
       end
 
@@ -167,10 +168,10 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
     context 'assign as job developer fails when not in that role' do
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.user.attributes)
+        person_hash = aa_person.attributes.merge(aa_person.attributes)
         person_hash[:as_jd_job_seeker_ids] = [job_seeker.id]
         person_hash[:as_cm_job_seeker_ids] = []
-        sign_in aa_person
+        sign_in aa_person.user
 
         allow(assign_agency_person_mock)
           .to receive(:call)
@@ -194,10 +195,10 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
     context 'assign as case manager fails when not in that role' do
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.user.attributes)
+        person_hash = aa_person.attributes.merge(aa_person.attributes)
         person_hash[:as_jd_job_seeker_ids] = []
         person_hash[:as_cm_job_seeker_ids] = [job_seeker.id]
-        sign_in aa_person
+        sign_in aa_person.user
 
         allow(assign_agency_person_mock)
           .to receive(:call)
@@ -230,7 +231,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
       before(:each) do
         allow(Pusher).to receive(:trigger)
-        sign_in aa_person
+        sign_in aa_person.user
         patch :update, id: jd_person, agency_person: person_hash
       end
 
@@ -250,7 +251,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
       end
 
       before(:each) do
-        sign_in aa_person
+        sign_in aa_person.user
         patch :update, id: cm_person, agency_person: person_hash
       end
 
@@ -276,7 +277,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
     context 'assign job developer to job seeker' do
       before do |example|
         allow(Pusher).to receive(:trigger)
-        sign_in aa_person
+        sign_in aa_person.user
         unless example.metadata[:skip_before]
           xhr :patch, :assign_job_seeker, id: jd_person.id,
                                           job_seeker_id: adam.id,
@@ -317,7 +318,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
     context 'assign case manager to job seeker' do
       before do |example|
         allow(Pusher).to receive(:trigger)
-        sign_in aa_person
+        sign_in aa_person.user
         unless example.metadata[:skip_before]
           xhr :patch, :assign_job_seeker, id: cm_person.id,
                                           job_seeker_id: adam.id,
@@ -360,7 +361,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
           .to receive(:call)
           .and_raise(JobSeekers::AssignAgencyPerson::InvalidRole)
 
-        sign_in aa_person
+        sign_in aa_person.user
         xhr :patch, :assign_job_seeker, id: cm_person.id,
                                         job_seeker_id: adam.id,
                                         agency_role: 'AA'
@@ -372,7 +373,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #destroy' do
     before(:each) do
-      sign_in aa_person
+      sign_in aa_person.user
       get :destroy, id: cm_person.id
     end
 
@@ -388,7 +389,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #edit_profile' do
     before(:each) do
-      sign_in jd_person
+      sign_in jd_person.user
       get :edit_profile, id: jd_person
     end
 
@@ -408,8 +409,8 @@ RSpec.describe AgencyPeopleController, type: :controller do
   describe 'PATCH #update_profile' do
     context 'valid attributes' do
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.user.attributes)
-        sign_in aa_person
+        person_hash = aa_person.attributes.merge(aa_person.attributes)
+        sign_in aa_person.user
         patch :update_profile, id: aa_person,
                                agency_person: person_hash
       end
@@ -429,18 +430,17 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
     context 'valid attributes without password change' do
       before(:each) do
-        @password = aa_person.encrypted_password
-        sign_in aa_person
-        patch :update_profile,
-              agency_person:
-                FactoryBot.attributes_for(:agency_person,
-                                          password: '',
-                                          password_confirmation: '')
-                          .merge(FactoryBot.attributes_for(:user,
-                                                           first_name: 'John',
-                                                           last_name: 'Smith',
-                                                           phone: '780-890-8976')),
-              id: aa_person
+        @password = aa_person.user.encrypted_password
+        sign_in aa_person.user
+        patch :update_profile, id: aa_person.id,
+              agency_person: { user_attributes:
+                               { id: aa_person.user.id,
+                                 password: '',
+                                 password_confirmation: '',
+                                 first_name: 'John',
+                                 last_name: 'Smith',
+                                 email: 'newemail@gmail.com',
+                                 phone: '780-890-8976' } }
         aa_person.reload
       end
 
@@ -473,7 +473,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #list_js_cm' do
     before(:each) do
-      sign_in cm_person
+      sign_in cm_person.user
       adam.assign_case_manager(cm_person, cm_person.agency)
       xhr :get, :list_js_cm, id: cm_person.id,
                              people_type: 'jobseeker-cm'
@@ -494,7 +494,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
 
   describe 'GET #list_js_jd' do
     before(:each) do
-      sign_in jd_person
+      sign_in jd_person.user
       adam.assign_job_developer(jd_person, jd_person.agency)
       xhr :get, :list_js_jd, id: jd_person.id,
                              people_type: 'jobseeker-jd'
@@ -514,6 +514,10 @@ RSpec.describe AgencyPeopleController, type: :controller do
   end
 
   describe 'GET #my_js_as_jd' do
+    before(:each) do
+      stub_cruncher_authenticate
+      stub_cruncher_file_upload
+    end
     context 'job developer cum case manager with job seekers' do
       before :each do
         @jd_cm = FactoryBot.create(:jd_cm, agency: agency)
@@ -535,7 +539,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
         @js4.assign_job_developer(@job_developer, agency)
         @js4.assign_case_manager(@jd_cm, agency)
 
-        sign_in @jd_cm
+        sign_in @jd_cm.user
       end
 
       it 'returns http success' do
@@ -591,7 +595,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
         @job_developer1 = FactoryBot.create(:job_developer, agency: agency)
         @js1 = FactoryBot.create(:job_seeker)
         @js2 = FactoryBot.create(:job_seeker)
-        sign_in @job_developer1
+        sign_in @job_developer1.user
         xhr :get, :my_js_as_jd, id: @job_developer1.id, format: :json
       end
 
