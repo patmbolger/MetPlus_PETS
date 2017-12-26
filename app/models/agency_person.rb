@@ -70,7 +70,6 @@ class AgencyPerson < ActiveRecord::Base
     end
   end
 
-
   def job_seekers_as_job_developer
     job_seekers.where(id: AgencyRelation.in_role_of(:JD).pluck(:job_seeker_id))
   end
@@ -78,9 +77,6 @@ class AgencyPerson < ActiveRecord::Base
   def job_seekers_as_case_manager
     job_seekers.where(id: AgencyRelation.in_role_of(:CM).pluck(:job_seeker_id))
   end
-
-
-
 
   def other_agency_admin?
     admins = Agency.agency_admins(agency)
@@ -123,21 +119,6 @@ class AgencyPerson < ActiveRecord::Base
       seekers << relation.job_seeker.id
     end
     seekers
-  end
-
-  def is_job_developer? agency
-    return false if self.agency != agency
-    has_role?(:JD)
-  end
-
-  def is_case_manager? agency
-    return false if self.agency != agency
-    has_role?(:CM)
-  end
-
-  def is_agency_admin? agency
-    return false if self.agency != agency
-    has_role?(:AA)
   end
 
   private

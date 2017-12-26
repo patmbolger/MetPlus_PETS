@@ -3,22 +3,25 @@ require 'rails_helper'
 RSpec.shared_examples 'unauthorizes all' do
   let(:agency) { FactoryBot.create(:agency) }
   let(:company) { FactoryBot.create(:company) }
+  let(:case_manager) { FactoryBot.create(:case_manager, agency: agency) }
+  let(:job_developer) { FactoryBot.create(:job_developer, agency: agency) }
+  let(:company_admin) { FactoryBot.create(:company_admin, company: company) }
 
   context 'Case Manager' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:case_manager, agency: agency) }
+      let(:user) { case_manager.user }
     end
   end
 
   context 'Job Developer' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:job_developer, agency: agency) }
+      let(:user) { job_developer.user }
     end
   end
 
   context 'Company Admin' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:company_admin, company: company) }
+      let(:user) { company_admin.user }
     end
   end
 end
@@ -26,6 +29,9 @@ end
 RSpec.shared_examples 'unauthorized all non-agency people' do
   let(:agency) { FactoryBot.create(:agency) }
   let(:company) { FactoryBot.create(:company) }
+  let(:job_seeker) { FactoryBot.create(:job_seeker) }
+  let(:company_admin) { FactoryBot.create(:company_admin, company: company) }
+  let(:company_contact) { FactoryBot.create(:company_contact, company: company) }
 
   context 'Not logged in' do
     it_behaves_like 'unauthenticated request'
@@ -33,19 +39,19 @@ RSpec.shared_examples 'unauthorized all non-agency people' do
 
   context 'Job Seeker' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:job_seeker) }
+      let(:user) { job_seeker.user }
     end
   end
 
   context 'Company admin' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:company_admin, company: company) }
+      let(:user) { company_admin.user }
     end
   end
 
   context 'Company contact' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:company_contact, company: company) }
+      let(:user) { company_contact.user }
     end
   end
 end
@@ -60,9 +66,10 @@ RSpec.describe BranchesController, type: :controller do
   let(:ca)      { FactoryBot.create(:company_admin, company: company) }
   let(:cc)      { FactoryBot.create(:company_contact, company: company) }
   let(:js)      { FactoryBot.create(:job_seeker) }
+
   describe 'GET #show' do
     before(:each) do
-      sign_in admin
+      sign_in admin.user
       get :show, id: branch.id
     end
     it 'assigns @branch for view' do
@@ -75,6 +82,7 @@ RSpec.describe BranchesController, type: :controller do
       expect(response).to have_http_status(:success)
     end
   end
+
   describe 'POST #create' do
     let(:branch1)  { FactoryBot.create(:branch, agency: agency) }
     let(:branch2)  do
@@ -82,7 +90,7 @@ RSpec.describe BranchesController, type: :controller do
     end
     context 'valid attributes' do
       before(:each) do
-        sign_in admin
+        sign_in admin.user
         post :create,
              agency_id: agency,
              branch: FactoryBot.attributes_for(:branch)
@@ -103,7 +111,7 @@ RSpec.describe BranchesController, type: :controller do
     context 'invalid attributes' do
       render_views
       before(:each) do
-        sign_in admin
+        sign_in admin.user
         branch2.address.assign_attributes(zipcode: '123456')
         branch2.valid?
         branch_hash = FactoryBot.attributes_for(:branch, code: branch1.code)
@@ -127,7 +135,7 @@ RSpec.describe BranchesController, type: :controller do
   end
   describe 'GET #new' do
     before(:each) do
-      sign_in admin
+      sign_in admin.user
       get :new, agency_id: agency
     end
     it 'assigns @agency for branch creation' do
@@ -140,7 +148,7 @@ RSpec.describe BranchesController, type: :controller do
   end
   describe 'GET #edit' do
     before(:each) do
-      sign_in admin
+      sign_in admin.user
       get :edit, id: branch.id
     end
     it 'assigns @branch for form' do
@@ -158,7 +166,7 @@ RSpec.describe BranchesController, type: :controller do
     let(:branch2)  { FactoryBot.create(:branch, agency: agency) }
     context 'valid attributes' do
       before(:each) do
-        sign_in admin
+        sign_in admin.user
         patch :update, branch: FactoryBot.attributes_for(:branch),
                        id: branch1.id
       end
@@ -178,7 +186,7 @@ RSpec.describe BranchesController, type: :controller do
     context 'invalid attributes' do
       render_views
       before(:each) do
-        sign_in admin
+        sign_in admin.user
         branch2.assign_attributes(code: branch1.code)
         branch2.address.assign_attributes(zipcode: '123456')
         branch2.valid?
@@ -201,7 +209,7 @@ RSpec.describe BranchesController, type: :controller do
   end
   describe 'DELETE #destroy' do
     before(:each) do
-      sign_in admin
+      sign_in admin.user
       delete :destroy, id: branch.id
     end
     it 'sets flash message' do
