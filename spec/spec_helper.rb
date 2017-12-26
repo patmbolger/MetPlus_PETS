@@ -33,7 +33,7 @@ include ServiceStubHelpers::RecaptchaValidator
 WebMock.enable!
 
 #  Uncomment to allow non-mocked external service calls to proceed:
-WebMock.allow_net_connect!
+#WebMock.allow_net_connect!
 
 SimpleCov.start
 RSpec.configure do |config|

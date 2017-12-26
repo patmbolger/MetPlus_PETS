@@ -15,7 +15,7 @@ RSpec.describe Event, type: :model do
     js
   end
 
-  let!(:resume) { FactoryBot.create(:resume, job_seeker: job_seeker) }
+  let(:resume) { FactoryBot.create(:resume, job_seeker: job_seeker) }
   let(:company) { FactoryBot.create(:company, agencies: [agency]) }
   let!(:company_person) do
     FactoryBot.create(:company_person, company: company)
@@ -34,9 +34,16 @@ RSpec.describe Event, type: :model do
   let(:evt_obj_jobpost_class) { Struct.new(:job, :agency) }
   let(:evt_obj_jobpost) { evt_obj_jobpost_class.new(job, agency) }
 
-  let(:application) { job.apply job_seeker }
-  let(:application_wo_cp) { job_wo_cp.apply job_seeker }
+  let(:application) do
+    resume
+    job.apply job_seeker
+  end
+  let(:application_wo_cp) do
+    resume
+    job_wo_cp.apply job_seeker
+  end
   let(:application_diff_jd) do
+    resume
     app = job.apply job_seeker
     app.job_developer = job_developer1
     app
@@ -125,6 +132,7 @@ RSpec.describe Event, type: :model do
   describe 'jobseeker_applied event' do
     before do
       stub_cruncher_authenticate
+      stub_cruncher_file_upload
       stub_cruncher_file_download(testfile_resume)
     end
 
@@ -158,6 +166,7 @@ RSpec.describe Event, type: :model do
   describe 'job_applied_by_job_developer event' do
     before do
       stub_cruncher_authenticate
+      stub_cruncher_file_upload
       stub_cruncher_file_download testfile_resume
     end
 
@@ -255,6 +264,7 @@ RSpec.describe Event, type: :model do
   describe 'job_application_accepted event' do
     before do
       stub_cruncher_authenticate
+      stub_cruncher_file_upload
       stub_cruncher_file_download(testfile_resume)
     end
 
@@ -319,6 +329,7 @@ RSpec.describe Event, type: :model do
   describe 'job_application_rejected event' do
     before do
       stub_cruncher_authenticate
+      stub_cruncher_file_upload
       stub_cruncher_file_download(testfile_resume)
     end
 
@@ -439,6 +450,11 @@ RSpec.describe Event, type: :model do
   end
 
   describe 'job_revoked event' do
+    before do
+      stub_cruncher_authenticate
+      stub_cruncher_file_upload
+    end
+
     it 'triggers mass Pusher message' do
       Event.create(:JOB_REVOKED, evt_obj_jobpost)
       expect(Pusher).to have_received(:trigger)

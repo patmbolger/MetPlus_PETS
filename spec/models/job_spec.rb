@@ -3,11 +3,11 @@ include ServiceStubHelpers::Cruncher
 
 RSpec.describe Job, type: :model do
   let(:job) { FactoryBot.create(:job) }
-  let!(:job_seeker) { FactoryBot.create(:job_seeker) }
-  let!(:job_seeker_resume) { FactoryBot.create(:resume, job_seeker: job_seeker) }
-  let!(:job_seeker2) { FactoryBot.create(:job_seeker) }
-  let!(:job_seeker2_resume) { FactoryBot.create(:resume, job_seeker: job_seeker2) }
-  let!(:test_file) { '../fixtures/files/Admin-Assistant-Resume.pdf' }
+  let(:job_seeker) { FactoryBot.create(:job_seeker) }
+  let(:job_seeker_resume) { FactoryBot.create(:resume, job_seeker: job_seeker) }
+  let(:job_seeker2) { FactoryBot.create(:job_seeker) }
+  let(:job_seeker2_resume) { FactoryBot.create(:resume, job_seeker: job_seeker2) }
+  let(:test_file) { '../fixtures/files/Admin-Assistant-Resume.pdf' }
 
   describe 'Fixtures' do
     it 'should have a valid factory' do
@@ -204,10 +204,12 @@ RSpec.describe Job, type: :model do
       before(:each) do
         stub_cruncher_authenticate
         stub_cruncher_job_create
+        stub_cruncher_file_upload
         stub_cruncher_file_download test_file
       end
 
       it 'success - first application' do
+        job_seeker_resume
         num_applications = job.number_applicants
         job.apply(job_seeker, nil)
         job.reload
@@ -215,11 +217,15 @@ RSpec.describe Job, type: :model do
         expect(job.number_applicants).to be(num_applications + 1)
       end
       it 'raise error - second application with same job seeker' do
+        job_seeker_resume
         job.apply(job_seeker, nil)
         expect { job.apply(job_seeker, nil) }.to raise_error(ActiveRecord::RecordInvalid)
           .with_message('Validation failed: Job seeker has already been taken')
       end
       it 'two applications, different job seekers' do
+        job_seeker_resume
+        job_seeker2_resume
+
         num_applications = job.number_applicants
         first_appl = job.apply(job_seeker, nil)
         second_appl = job.apply(job_seeker2, nil)
@@ -232,6 +238,7 @@ RSpec.describe Job, type: :model do
           .to eq second_appl
       end
       it 'application with answers to job questions' do
+        job_seeker_resume
         application = job.apply(job_seeker, question_answers)
         expect(application.application_questions.count).to eq 2
         expect(application.application_questions.first.answer).to be true

@@ -49,7 +49,7 @@ describe JobSeeker, type: :model do
 
   describe 'job applications' do
     let!(:job_seeker) { FactoryBot.create(:job_seeker) }
-    let!(:resume)     { FactoryBot.create(:resume, job_seeker: job_seeker) }
+    let(:resume)     { FactoryBot.create(:resume, job_seeker: job_seeker) }
     let(:job1)        { FactoryBot.create(:job) }
     let(:job2)        { FactoryBot.create(:job) }
     let(:test_file)   { '../fixtures/files/Admin-Assistant-Resume.pdf' }
@@ -62,6 +62,7 @@ describe JobSeeker, type: :model do
     end
 
     it '#latest_application' do
+      resume
       job1.apply job_seeker
       expect(job_seeker.latest_application).to eq job1.job_applications[0]
       job2.apply job_seeker
@@ -69,6 +70,7 @@ describe JobSeeker, type: :model do
     end
 
     it '#applied_to_job?' do
+      resume
       job1.apply job_seeker
       job2.apply job_seeker
       expect(job_seeker.applied_to_job?(job1)).to be true

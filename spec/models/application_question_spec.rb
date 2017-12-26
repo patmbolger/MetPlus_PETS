@@ -1,8 +1,11 @@
 require 'rails_helper'
+include ServiceStubHelpers::Cruncher
 
 RSpec.describe ApplicationQuestion, type: :model do
   describe 'Fixtures' do
     it 'should have a valid factory' do
+      stub_cruncher_authenticate
+      stub_cruncher_job_create
       expect(FactoryBot.build(:application_question)).to be_valid
     end
   end
