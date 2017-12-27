@@ -63,10 +63,11 @@ class CompanyRegistrationsController < ApplicationController
   def update
     reg_params = company_params
     reg_params[:company_people_attributes]['0'] =
-      handle_user_form_parameters(reg_params[:company_people_attributes]['0'])
+      handle_user_form_parameters(
+        reg_params[:company_people_attributes]['0'])
 
     changed_email = (@company.company_people[0].email !=
-            reg_params[:company_people_attributes]['0'][:email])
+      reg_params[:company_people_attributes]['0'][:user_attributes][:email])
 
     # Do not create a new email confirmation token and
     # do not send an email confirmation email
