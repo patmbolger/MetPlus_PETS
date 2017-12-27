@@ -11,36 +11,12 @@
 
   = f.fields_for :company_people do |company_person_f|
     .form-group
-      = company_person_f.label :first_name, 'Contact Person', class: 'control-label col-sm-2'
-      .col-sm-3
-        = company_person_f.text_field :first_name, size: 30, class: 'form-control', placeholder: 'First Name'
-      .col-sm-3
-        = company_person_f.text_field :last_name, size: 30, class: 'form-control', placeholder: 'Last Name'  
-
-    .form-group
       = company_person_f.label :title, 'Job Title', class: 'control-label col-sm-2'
       .col-sm-6
-        = company_person_f.text_field :title, class: 'form-control'        
+        = company_person_f.text_field :title, class: 'form-control'
 
-    .form-group
-      = company_person_f.label :phone, 'Contact Phone', class: 'control-label col-sm-2'
-      .col-sm-6
-        = company_person_f.phone_field :phone, size: 30, class: 'form-control'
-
-    .form-group
-      = company_person_f.label :email, 'Contact Email', class: 'control-label col-sm-2'
-      .col-sm-6
-        = company_person_f.email_field :email, size: 30, class: 'form-control'
-
-    .form-group
-      = company_person_f.label :password, 'Password', class: 'control-label col-sm-2'
-      .col-sm-6
-        = company_person_f.password_field :password, size: 30, class: 'form-control'
-
-    .form-group
-      = company_person_f.label :password_confirmation, 'Password Confirmation', class: 'control-label col-sm-2'
-      .col-sm-6
-        = company_person_f.password_field :password_confirmation, size: 30, class: 'form-control'
+    - @user_form = company_person_f
+    = render partial: 'users/subform'
 
   .form-group
     .col-sm-2.col-sm-offset-2

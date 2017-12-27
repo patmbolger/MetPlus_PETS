@@ -126,9 +126,9 @@ class CompanyRegistrationsController < ApplicationController
       .require(:company)
       .permit(:name, :email, :phone, :fax, :website,
               :ein, :description, :job_email,
-              company_people_attributes:
-                [:id, :first_name, :last_name, :phone,
-                 :email, :title, :password, :password_confirmation],
+              company_people_attributes: [:id, :title,
+                user_attributes: [:id, :first_name, :last_name, :phone,
+                                  :email, :password, :password_confirmation]],
               addresses_attributes:
                 [:id, :street, :city, :zipcode, :state, :_destroy])
   end

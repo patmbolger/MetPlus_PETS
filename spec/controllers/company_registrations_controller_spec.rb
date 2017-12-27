@@ -27,31 +27,31 @@ RSpec.shared_examples 'unauthorized requests' do
   context 'unauthorized access' do
     context 'agency admin not associated with the company' do
       it_behaves_like 'unauthorized request' do
-        let(:user) { metplus_admin }
+        let(:user) { metplus_admin.user }
       end
     end
 
     context 'unauthorized agency people' do
       it_behaves_like 'unauthorized request' do
-        let(:user) { cm }
+        let(:user) { cm.user }
       end
       it_behaves_like 'unauthorized request' do
-        let(:user) { jd }
+        let(:user) { jd.user }
       end
     end
 
     context 'company people' do
       it_behaves_like 'unauthorized request' do
-        let(:user) { cc }
+        let(:user) { cc.user }
       end
       it_behaves_like 'unauthorized request' do
-        let(:user) { company_admin }
+        let(:user) { company_admin.user }
       end
     end
 
     context 'Job Seeker' do
       it_behaves_like 'unauthorized request' do
-        let(:user) { js }
+        let(:user) { js.user }
       end
     end
   end
@@ -65,31 +65,31 @@ RSpec.shared_examples 'unauthorized XHR requests' do
   context 'unauthorized access' do
     context 'agency admin not associated with the company' do
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { metplus_admin }
+        let(:user) { metplus_admin.user }
       end
     end
 
     context 'unauthorized agency people' do
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { cm }
+        let(:user) { cm.user }
       end
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { jd }
+        let(:user) { jd.user }
       end
     end
 
     context 'company people' do
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { cc }
+        let(:user) { cc.user }
       end
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { company_admin }
+        let(:user) { company_admin.user }
       end
     end
 
     context 'Job Seeker' do
       it_behaves_like 'unauthorized XHR request' do
-        let(:user) { js }
+        let(:user) { js.user }
       end
     end
   end
@@ -116,6 +116,16 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
   let(:cc) { FactoryBot.create(:company_contact) }
   let(:js) { FactoryBot.create(:job_seeker) }
 
+  let(:registration_params) do
+    params = FactoryBot.attributes_for(:company)
+    params[:company_people_attributes] = { '0' => { title: 'HR Director',
+      user_attributes: FactoryBot.attributes_for(:user) } }
+    params[:addresses_attributes] =
+      { '0' => FactoryBot.attributes_for(:address),
+        '1' => FactoryBot.attributes_for(:address) }
+    params
+  end
+
   before(:each) do
     allow(Pusher).to receive(:trigger) # stub and spy on 'Pusher'
   end
@@ -125,13 +135,13 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
     context 'authorized access' do
       context 'agency admin' do
         it_behaves_like 'authorized show request' do
-          let(:user) { agency_admin }
+          let(:user) { agency_admin.user }
         end
       end
 
       context 'company admin' do
         it_behaves_like 'authorized show request' do
-          let(:user) { company_admin }
+          let(:user) { company_admin.user }
         end
       end
     end
@@ -143,34 +153,34 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
     context 'unauthorized access' do
       context 'agency admin not associated with the company' do
         it_behaves_like 'unauthorized request' do
-          let(:user) { metplus_admin }
+          let(:user) { metplus_admin.user }
         end
       end
 
       context 'company admin not associated with the company' do
         it_behaves_like 'unauthorized request' do
-          let(:user) { metplus_admin }
+          let(:user) { metplus_admin.user }
         end
       end
 
       context 'unauthorized agency people' do
         it_behaves_like 'unauthorized request' do
-          let(:user) { cm }
+          let(:user) { cm.user }
         end
         it_behaves_like 'unauthorized request' do
-          let(:user) { jd }
+          let(:user) { jd.user }
         end
       end
 
       context 'company contact' do
         it_behaves_like 'unauthorized request' do
-          let(:user) { cc }
+          let(:user) { cc.user }
         end
       end
 
       context 'Job Seeker' do
         it_behaves_like 'unauthorized request' do
-          let(:user) { js }
+          let(:user) { js.user }
         end
       end
     end
@@ -180,7 +190,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
     let(:request) { delete :destroy, id: company }
     context 'authorized access' do
       before do
-        sign_in agency_admin
+        sign_in agency_admin.user
         request
       end
       it 'sets flash message' do
@@ -211,7 +221,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
 
     context 'authorized access' do
       before(:each) do
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
 
       it 'delete company person(s)' do
@@ -229,14 +239,6 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
 
   describe 'POST #create' do
     let!(:agency) { FactoryBot.create(:agency) }
-    let!(:registration_params) do
-      params = FactoryBot.attributes_for(:company)
-      params[:company_people_attributes] = [FactoryBot.attributes_for(:user)]
-      params[:addresses_attributes] =
-        [FactoryBot.attributes_for(:address),
-         FactoryBot.attributes_for(:address)]
-      params
-    end
     let!(:company_role) do
       FactoryBot.create(:company_role,
                         role: CompanyRole::ROLE[:CA])
@@ -333,13 +335,6 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
   end
 
   describe 'PATCH #approve' do
-    let!(:registration_params) do
-      params = FactoryBot.attributes_for(:company)
-      params[:company_people_attributes] = [FactoryBot.attributes_for(:user)]
-      params[:addresses_attributes] = [FactoryBot.attributes_for(:address)]
-      params
-    end
-
     # controller :create action requires a 'CA' role to be present in the DB
     let!(:company_role) do
       FactoryBot.create(:company_role,
@@ -355,7 +350,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
         3.times do
           FactoryBot.create(:agency_person, agency: agency)
         end
-        sign_in agency_admin
+        sign_in agency_admin.user
         allow(Companies::ApproveCompanyRegistration)
           .to receive(:new).and_return(use_case_mock)
         allow(use_case_mock)
@@ -391,13 +386,6 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
   end
 
   describe 'PATCH #deny' do
-    let!(:registration_params) do
-      params = FactoryBot.attributes_for(:company)
-      params[:company_people_attributes] = [FactoryBot.attributes_for(:user)]
-      params[:addresses_attributes] = [FactoryBot.attributes_for(:address)]
-      params
-    end
-
     let(:use_case_mock) { double(Companies::DenyCompanyRegistration) }
 
     # controller :create action requires a 'CA' role to be present in the DB
@@ -420,7 +408,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
         allow(use_case_mock)
           .to receive(:call)
         post :create, company: registration_params
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
 
       context 'after denial' do
@@ -466,12 +454,11 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
       company = Company.find_by_name(prior_name)
       params = FactoryBot.attributes_for(:company,
                                          name: 'Sprockets Corporation')
-      params[:company_people_attributes] =
-        { '0' => FactoryBot.attributes_for(:user,
-                                           first_name: 'Fred',
-                                           last_name: 'Flintstone',
-                                           password: '',
-                                           password_confirmation: '') }
+      params[:company_people_attributes] = { user_attributes: {
+                                               first_name: 'Fred',
+                                               last_name: 'Flintstone',
+                                               password: '',
+                                               password_confirmation: '' } }
       params[:company_people_attributes]['0'][:id] =
         company.company_people[0].id
       params[:addresses_attributes] =
@@ -494,7 +481,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
           FactoryBot.create(:agency_person, agency: agency)
         end
         post :create, company: registration_params
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
 
       it 'updates person and address but does not add person or address' do
@@ -544,9 +531,7 @@ RSpec.describe CompanyRegistrationsController, type: :controller do
         registration_params[:addresses_attributes]['1']['id'] =
           company.addresses.second.id
         registration_params[:company_people_attributes] =
-          { '0' => FactoryBot.attributes_for(:user,
-                                             first_name: 'Fred',
-                                             last_name: 'Flintstone') }
+          { user_attributes: { first_name: 'Fred', last_name: 'Flintstone' } }
         request
         company.reload
         expect(company.addresses.count).to eq 1
