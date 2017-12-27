@@ -4,10 +4,12 @@ module UserDelegates
   included do
 
     delegate :actable, :acting_as, :actable_type,
-             :email, :first_name, :last_name, :full_name, :unconfirmed_email,
+             :email, :phone, :unconfirmed_email,
+             :first_name, :last_name, :full_name,
              :first_name=, :last_name=, :email=, :pets_user,
              :unconfirmed_email?, :encrypted_password,
-             :confirmation_token, :password, to: :user
+             :confirmation_token, :password,
+             :password=, :password_confirmation=, to: :user
 
     def is_agency_person?(agency)
       self.is_a?(AgencyPerson) && self.agency == agency

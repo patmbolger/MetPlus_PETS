@@ -2,6 +2,7 @@ class CompanyPerson < ActiveRecord::Base
   include UserDelegates
 
   has_one :user, as: :person, dependent: :destroy
+  accepts_nested_attributes_for :user
 
   belongs_to :company
   belongs_to :address

@@ -3,16 +3,18 @@ include ServiceStubHelpers::Cruncher
 
 RSpec.shared_examples 'unauthorized company people' do
   let(:company) { FactoryBot.create(:company) }
+  let(:company_admin) { FactoryBot.create(:company_admin, company: company) }
+  let(:company_contact) { FactoryBot.create(:company_contact, company: company) }
 
   context 'company admin' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:company_admin, company: company) }
+      let(:user) { company_admin.user }
     end
   end
 
   context 'company contact' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:company_contact, company: company) }
+      let(:user) { company_contact.user }
     end
   end
 end
@@ -20,22 +22,25 @@ end
 RSpec.shared_examples 'unauthorized agency people and jobseeker' do
   let(:agency) { FactoryBot.create(:agency) }
   let(:company) { FactoryBot.create(:company) }
+  let(:case_manager) { FactoryBot.create(:case_manager, agency: agency) }
+  let(:job_developer) { FactoryBot.create(:job_developer, agency: agency) }
+  let(:job_seeker) { FactoryBot.create(:job_seeker) }
 
   context 'Case manager' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:case_manager, agency: agency) }
+      let(:user) { case_manager.user }
     end
   end
 
   context 'Job developer' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:job_developer, agency: agency) }
+      let(:user) { job_developer.user }
     end
   end
 
   context 'Job seeker' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { FactoryBot.create(:job_seeker) }
+      let(:user) { job_seeker.user }
     end
   end
 end
@@ -55,7 +60,7 @@ RSpec.describe CompaniesController, type: :controller do
 
   describe 'GET #show' do
     before(:each) do
-      sign_in company_admin
+      sign_in company_admin.user
       get :show, id: company
     end
     it 'assigns @company for view' do
@@ -71,7 +76,7 @@ RSpec.describe CompaniesController, type: :controller do
 
   describe 'GET #edit' do
     before(:each) do
-      sign_in company_admin
+      sign_in company_admin.user
       get :edit, id: company
     end
     it 'assigns @company for form' do
@@ -90,7 +95,7 @@ RSpec.describe CompaniesController, type: :controller do
       before(:each) do
         stub_cruncher_authenticate
         stub_cruncher_job_create
-        sign_in admin
+        sign_in admin.user
         delete :destroy, id: company_with_jobs
       end
 
@@ -109,7 +114,7 @@ RSpec.describe CompaniesController, type: :controller do
 
     context 'company with no jobs' do
       before(:each) do
-        sign_in admin
+        sign_in admin.user
         delete :destroy, id: company
       end
 
@@ -134,7 +139,7 @@ RSpec.describe CompaniesController, type: :controller do
     let!(:cp4) { FactoryBot.create(:company_contact, company: company) }
 
     before(:each) do
-      sign_in cp1
+      sign_in cp1.user
       xhr :get, :list_people, id: company
     end
     it 'assigns @people to collection of all company people' do
@@ -155,7 +160,7 @@ RSpec.describe CompaniesController, type: :controller do
     end
 
     before(:each) do
-      sign_in company_admin
+      sign_in company_admin.user
     end
 
     context 'valid attributes' do
@@ -206,7 +211,7 @@ RSpec.describe CompaniesController, type: :controller do
       end
       it_behaves_like 'unauthorized request' do
         let(:request) { get :edit, id: company }
-        let(:user) { company_contact }
+        let(:user) { company_contact.user }
       end
     end
     context '#update' do
@@ -233,7 +238,7 @@ RSpec.describe CompaniesController, type: :controller do
         end
         it_behaves_like 'unauthorized request' do
           let(:request) { patch :update, id: company, company: params_hash }
-          let(:user) { company_contact }
+          let(:user) { company_contact.user }
         end
       end
     end
@@ -255,7 +260,7 @@ RSpec.describe CompaniesController, type: :controller do
       end
       it_behaves_like 'unauthorized request' do
         let(:request) { get :show, id: company }
-        let(:user) { company_contact }
+        let(:user) { company_contact.user }
       end
     end
     context '#destroy' do

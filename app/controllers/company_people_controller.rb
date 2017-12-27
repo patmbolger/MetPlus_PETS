@@ -67,7 +67,7 @@ class CompanyPeopleController < ApplicationController
 
   def home
     if request.xhr?
-      
+
       if params[:data_type] == 'skills'
 
         @skills = pets_user.company.skills.order(:name)
@@ -125,8 +125,9 @@ class CompanyPeopleController < ApplicationController
   end
 
   def company_person_params
-    params.require(:company_person).permit(:title, :first_name, :last_name, :phone,
-                                           :email, :password, :password_confirmation,
-                                           :address_id, company_role_ids: [])
+    params.require(:company_person)
+      .permit(:title, :address_id, company_role_ids: [],
+              user_attributes: [:id, :first_name, :last_name, :email, :phone,
+                                :password, :password_confirmation])
   end
 end

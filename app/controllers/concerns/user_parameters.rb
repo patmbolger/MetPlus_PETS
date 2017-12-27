@@ -2,12 +2,10 @@ module UserParameters
   extend ActiveSupport::Concern
 
   def handle_user_form_parameters parameters
+    return parameters unless parameters.dig(:user_attributes, :password)&.blank?
 
-    if parameters[:password].nil? or parameters[:password].to_s.length == 0
-      parameters.delete(:password)
-      parameters.delete(:password_confirmation)
-    end
-
+    parameters[:user_attributes].delete(:password)
+    parameters[:user_attributes].delete(:password_confirmation)
     parameters
   end
 end
