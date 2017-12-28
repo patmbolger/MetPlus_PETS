@@ -1,15 +1,5 @@
 require 'rails_helper'
 
-# Specs in this file have access to a helper object that includes
-# the CompanyPeopleHelper. For example:
-#
-# describe CompanyPeopleHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
 RSpec.describe CompanyPeopleHelper, type: :helper do
   it 'returns true when company admin is the sole admin' do
     company_admin = create(:company_admin)
