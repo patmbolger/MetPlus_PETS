@@ -10,18 +10,18 @@ RSpec.shared_examples 'LicensesController unauthorized access' do
 
   context 'Case Manager' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:case_manager, agency: agency) }
+      let(:user) { FactoryBot.create(:case_manager, agency: agency).user }
     end
   end
 
   context 'Job Developer' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:job_developer, agency: agency) }
+      let(:user) { FactoryBot.create(:job_developer, agency: agency).user }
     end
   end
   context 'Job Seeker' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:job_seeker) }
+      let(:user) { FactoryBot.create(:job_seeker).user }
     end
   end
 end
@@ -35,7 +35,7 @@ RSpec.describe LicensesController, type: :controller do
   describe 'POST #create' do
     context 'authorized access - agency admin' do
       before :each do
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
       it 'creates new license for valid parameters' do
         expect { xhr :post, :create, license: license_params }
@@ -62,7 +62,7 @@ RSpec.describe LicensesController, type: :controller do
   describe 'GET #show' do
     context 'authorized access - agency admin' do
       before :each do
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
 
       context 'license found' do
@@ -98,7 +98,7 @@ RSpec.describe LicensesController, type: :controller do
   describe 'PATCH #update' do
     context 'authorized access - agency admin' do
       before :each do
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
       it 'returns success for valid parameters' do
         xhr :patch, :update, id: license, license: license_params
@@ -125,7 +125,7 @@ RSpec.describe LicensesController, type: :controller do
 
     context 'authorized access - agency admin' do
       before :each do
-        sign_in agency_admin
+        sign_in agency_admin.user
       end
 
       let!(:job_license) { FactoryBot.create(:job_license, license: license) }
