@@ -15,7 +15,7 @@ RSpec.describe TaskPolicy do
   let(:company_admin) { FactoryBot.create(:company_admin, company: company) }
   let(:company1_admin) { FactoryBot.create(:company_admin, company: company1) }
   let(:company_contact) { FactoryBot.create(:company_contact, company: company) }
-  let(:task) { FactoryBot.create(:task, owner: job_developer) }
+  let(:task) { FactoryBot.create(:task, owner: job_developer.user) }
   let(:task_job_developers) do
     FactoryBot.create(:task, owner: nil, owner_agency_role: :JD, owner_agency: agency)
   end
