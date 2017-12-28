@@ -1,6 +1,6 @@
 RSpec.shared_examples 'unauthorized request' do
   before :each do
-    warden.set_user user
+    warden.set_user (user.is_a?(User) ? user : user.user)
     request
   end
 
@@ -19,7 +19,7 @@ end
 
 RSpec.shared_examples 'unauthorized XHR request' do
   before :each do
-    warden.set_user user
+    warden.set_user (user.is_a?(User) ? user : user.user)
     request
   end
 
@@ -85,7 +85,7 @@ RSpec.configure { |c| c.extend Helpers }
 RSpec.shared_examples 'unauthorized' do |role|
   assign_role(role)
   before :each do
-    warden.set_user person
+    warden.set_user person&.user
     request
   end
   it { expect(response).to have_http_status(:redirect) }
@@ -98,7 +98,7 @@ end
 RSpec.shared_examples 'unauthorized XHR' do |role|
   assign_role(role)
   before :each do
-    warden.set_user person
+    warden.set_user person&.user
     request
   end
 
