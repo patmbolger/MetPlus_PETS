@@ -21,7 +21,7 @@ RSpec.describe TestConcernJobsViewerClass do
     before(:each) do
       stub_cruncher_authenticate
       stub_cruncher_job_create
-      warden.set_user cmpy_person1
+      warden.set_user cmpy_person1.user
     end
 
     it 'returns all jobs for a specified company' do
