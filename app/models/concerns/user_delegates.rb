@@ -9,7 +9,8 @@ module UserDelegates
              :first_name=, :last_name=, :email=, :pets_user,
              :unconfirmed_email?, :encrypted_password,
              :confirmation_token, :password,
-             :password=, :password_confirmation=, to: :user
+             :password=, :password_confirmation=,
+             :approved, :approved=, to: :user
 
     def is_agency_person?(agency)
       self.is_a?(AgencyPerson) && self.agency == agency
