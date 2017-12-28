@@ -123,6 +123,7 @@ RSpec.describe AgencyPeopleController, type: :controller do
         person_hash[:agency_role_ids] = [aa_role.id.to_s]
         person_hash[:as_jd_job_seeker_ids] = []
         person_hash[:as_cm_job_seeker_ids] = []
+        person_hash[:user_attributes] = aa_person.user.attributes
         sign_in aa_person.user
         patch :update, id: aa_person,
                        agency_person: person_hash
@@ -409,7 +410,8 @@ RSpec.describe AgencyPeopleController, type: :controller do
   describe 'PATCH #update_profile' do
     context 'valid attributes' do
       before(:each) do
-        person_hash = aa_person.attributes.merge(aa_person.attributes)
+        person_hash = aa_person.attributes
+          .merge(user_attributes: aa_person.user.attributes)
         sign_in aa_person.user
         patch :update_profile, id: aa_person,
                                agency_person: person_hash
@@ -715,7 +717,8 @@ RSpec.describe AgencyPeopleController, type: :controller do
         expect(subject).to_not receive(:user_not_authorized)
         allow(controller).to receive(:current_user).and_return(cm_person)
         patch :update_profile, id: cm_person.id,
-                               agency_person: attributes_for(:agency_person)
+              agency_person: attributes_for(:agency_person)
+                .merge(user_attributes: cm_person.user.attributes)
       end
 
       it 'does not authorize agency person to update other agency person' do

@@ -292,12 +292,12 @@ RSpec.describe JobSeekersController, type: :controller do
       context 'successful initial résumé upload' do
         it 'saves the first resume record' do
           expect do
-            patch :update,
-                  id: owner,
+            patch :update, id: owner,
                   job_seeker: FactoryBot.attributes_for(
                     :job_seeker,
-                    resume: fixture_file_upload('files/Janitor-Resume.doc')
-                  )
+                    resume: fixture_file_upload('files/Janitor-Resume.doc'))
+                    .merge(user_attributes: owner.user.attributes)
+
           end.to change(Resume, :count).by(+1)
           expect(flash[:notice]).to eq 'Jobseeker was updated successfully.'
         end
@@ -357,8 +357,9 @@ RSpec.describe JobSeekersController, type: :controller do
                 id: owner,
                 job_seeker: FactoryBot.attributes_for(
                   :job_seeker,
-                  resume: fixture_file_upload('files/Example Excel File.xls')
-                )
+                  resume: fixture_file_upload('files/Example Excel File.xls'))
+                  .merge(user_attributes: owner.user.attributes)
+
           owner.reload
         end
         it 'does not update existing resume' do
@@ -375,11 +376,11 @@ RSpec.describe JobSeekersController, type: :controller do
         before(:each) do
           owner.assign_attributes(year_of_birth: '198')
           owner.valid?
-          patch :update,
-                id: owner,
+          patch :update, id: owner,
                 job_seeker: FactoryBot.attributes_for(:job_seeker,
                                                       year_of_birth: '198',
                                                       resume: '')
+                            .merge(user_attributes: owner.user.attributes)
         end
         it 'renders edit template' do
           expect(response).to render_template('edit')
@@ -396,9 +397,10 @@ RSpec.describe JobSeekersController, type: :controller do
       end
       context 'valid attributes' do
         it 'locates the requested @jobseeker' do
-          patch :update,
-                id: owner,
+          patch :update, id: owner,
                 job_seeker: FactoryBot.attributes_for(:job_seeker)
+                .merge(user_attributes: owner.user.attributes)
+
           expect(assigns(:jobseeker)).to eq(owner)
         end
         it "changes @jobseeker's attribute" do
@@ -409,9 +411,9 @@ RSpec.describe JobSeekersController, type: :controller do
           expect(owner.phone).to eq('111-111-1111')
         end
         it 'sets flash message and redirects to job seeker show page' do
-          patch :update,
-                id: owner,
+          patch :update, id: owner,
                 job_seeker: FactoryBot.attributes_for(:job_seeker)
+                .merge(user_attributes: owner.user.attributes)
           expect(flash[:notice]).to eq 'Jobseeker was updated successfully.'
           expect(response).to redirect_to owner
         end
@@ -455,6 +457,7 @@ RSpec.describe JobSeekersController, type: :controller do
           patch :update,
                 id: owner,
                 job_seeker: FactoryBot.attributes_for(:job_seeker)
+                .merge(user_attributes: owner.user.attributes)
           expect(assigns(:jobseeker)).to eq(owner)
         end
         it "changes @jobseeker's attribute" do
@@ -468,6 +471,7 @@ RSpec.describe JobSeekersController, type: :controller do
           patch :update,
                 id: owner,
                 job_seeker: FactoryBot.attributes_for(:job_seeker)
+                .merge(user_attributes: owner.user.attributes)
           expect(flash[:notice]).to eq 'Jobseeker was updated successfully.'
           expect(response).to redirect_to owner
         end
