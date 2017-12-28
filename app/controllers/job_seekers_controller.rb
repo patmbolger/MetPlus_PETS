@@ -49,7 +49,7 @@ class JobSeekersController < ApplicationController
   def update
     @jobseeker = JobSeeker.find(params[:id])
     authorize @jobseeker
-    jobseeker_params = handle_user_form_parameters(permitted_attributes(@jobseeker))
+    jobseeker_params = handle_user_form_parameters(form_params)
     dispatch_file    = jobseeker_params.delete 'resume'
     jobseeker_params.delete 'address_attributes' if address_is_empty?(jobseeker_params)
 
@@ -179,15 +179,10 @@ class JobSeekersController < ApplicationController
   end
 
   def form_params
-    params.require(:job_seeker).permit(:first_name,
-                                       :last_name, :email, :phone,
-                                       :password,
-                                       :password_confirmation,
-                                       :year_of_birth,
-                                       :resume,
-                                       :consent,
-                                       :job_seeker_status_id,
-                                       address_attributes: [:id, :street, :city,
-                                                            :zipcode, :state])
+    params.require(:job_seeker)
+      .permit(:year_of_birth, :resume, :consent, :job_seeker_status_id,
+              user_attributes: [:id, :first_name, :last_name, :email, :phone,
+                                        :password, :password_confirmation],
+              address_attributes: [:id, :street, :city, :zipcode, :state])
   end
 end

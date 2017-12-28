@@ -2,6 +2,7 @@ class JobSeeker < ActiveRecord::Base
   include UserDelegates
 
   has_one :user, as: :person, dependent: :destroy
+  accepts_nested_attributes_for :user
 
   has_many :resumes, dependent: :destroy
 

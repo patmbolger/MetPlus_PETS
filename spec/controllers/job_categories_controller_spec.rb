@@ -3,32 +3,38 @@ require 'rails_helper'
 RSpec.shared_examples 'unauthorized non-agency-admin people' do
   let(:agency) { FactoryBot.create(:agency) }
   let(:company) { FactoryBot.create(:company) }
+  let(:case_manager) { FactoryBot.create(:case_manager, agency: agency) }
+  let(:job_developer) { FactoryBot.create(:job_developer, agency: agency) }
+  let(:job_seeker) { FactoryBot.create(:job_seeker) }
+  let(:company_admin) { FactoryBot.create(:company_admin, company: company) }
+  let(:company_contact) { FactoryBot.create(:company_contact, company: company) }
+
   context 'Not logged in' do
     it_behaves_like 'unauthenticated XHR request'
   end
   context 'Case Manager' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:case_manager, agency: agency) }
+      let(:user) { case_manager.user }
     end
   end
   context 'Job Developer' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:job_developer, agency: agency) }
+      let(:user) { job_developer.user }
     end
   end
   context 'Job Seeker' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:job_seeker) }
+      let(:user) { job_seeker.user }
     end
   end
   context 'Company admin' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:company_admin, company: company) }
+      let(:user) { company_admin.user }
     end
   end
   context 'Company contact' do
     it_behaves_like 'unauthorized XHR request' do
-      let(:user) { FactoryBot.create(:company_contact, company: company) }
+      let(:user) { company_contact.user }
     end
   end
 end
@@ -41,7 +47,7 @@ RSpec.describe JobCategoriesController, type: :controller do
     context 'authorized access' do
       before :each do
         aa = FactoryBot.create(:agency_admin, agency: agency)
-        sign_in aa
+        sign_in aa.user
       end
       it 'creates new job category for valid parameters' do
         expect { xhr :post, :create, job_category: jobcat_params }
@@ -71,7 +77,7 @@ RSpec.describe JobCategoriesController, type: :controller do
     context 'authorized access' do
       before :each do
         aa = FactoryBot.create(:agency_admin, agency: agency)
-        sign_in aa
+        sign_in aa.user
       end
       context 'job category found' do
         before(:each) do
@@ -110,7 +116,7 @@ RSpec.describe JobCategoriesController, type: :controller do
     context 'authorized access' do
       before :each do
         aa = FactoryBot.create(:agency_admin, agency: agency)
-        sign_in aa
+        sign_in aa.user
       end
 
       it 'returns success for valid parameters' do
@@ -141,7 +147,7 @@ RSpec.describe JobCategoriesController, type: :controller do
     context 'authorized access' do
       before :each do
         aa = FactoryBot.create(:agency_admin, agency: agency)
-        sign_in aa
+        sign_in aa.user
       end
       context 'job category found' do
         it 'deletes job category' do

@@ -4,31 +4,31 @@ include ServiceStubHelpers::Cruncher
 RSpec.shared_examples 'denies access to unauthorized people' do
   context 'agency people' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { agency_admin }
+      let(:user) { agency_admin.user }
     end
 
     it_behaves_like 'unauthorized request' do
-      let(:user) { job_developer }
+      let(:user) { job_developer.user }
     end
 
     it_behaves_like 'unauthorized request' do
-      let(:user) { case_manager }
+      let(:user) { case_manager.user }
     end
   end
 
   context 'company people who don\'t belong to the job posting company' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { company_contact2 }
+      let(:user) { company_contact2.user }
     end
 
     it_behaves_like 'unauthorized request' do
-      let(:user) { company_admin2 }
+      let(:user) { company_admin2.user }
     end
   end
 
   context 'job seeker' do
     it_behaves_like 'unauthorized request' do
-      let(:user) { job_seeker }
+      let(:user) { job_seeker.user }
     end
   end
 end
@@ -77,7 +77,7 @@ RSpec.describe JobApplicationsController, type: :controller do
     context 'authenticated' do
       describe 'authorized access' do
         before do
-          sign_in company_admin
+          sign_in company_admin.user
           request
         end
 
@@ -107,7 +107,7 @@ RSpec.describe JobApplicationsController, type: :controller do
       describe 'authorized access' do
         let(:hire_mock) { double(JobApplications::Hire) }
         before(:each) do
-          sign_in company_admin
+          sign_in company_admin.user
           allow(JobApplications::Hire).to receive(:new)
             .and_return(hire_mock)
         end
@@ -173,7 +173,7 @@ RSpec.describe JobApplicationsController, type: :controller do
         let(:reject_mock) { double(JobApplications::Reject) }
 
         before(:each) do
-          sign_in company_admin
+          sign_in company_admin.user
           allow(JobApplications::Reject).to receive(:new)
             .and_return(reject_mock)
         end
@@ -236,7 +236,7 @@ RSpec.describe JobApplicationsController, type: :controller do
       describe 'authorized access' do
         let(:application_process_mock) { double(JobApplications::Processing) }
         before(:each) do
-          sign_in company_admin
+          sign_in company_admin.user
           allow(JobApplications::Processing).to receive(:new)
             .and_return(application_process_mock)
         end
