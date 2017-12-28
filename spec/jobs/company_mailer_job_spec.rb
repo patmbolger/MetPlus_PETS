@@ -61,6 +61,7 @@ RSpec.describe CompanyMailerJob, type: :job do
   it 'job application received event' do
     stub_cruncher_authenticate
     stub_cruncher_job_create
+    stub_cruncher_file_upload
 
     resume_file_path = File.new("#{Rails.root}/spec/fixtures/files/#{resume.file_name}")
                            .path

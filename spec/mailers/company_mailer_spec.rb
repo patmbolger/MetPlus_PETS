@@ -65,6 +65,7 @@ RSpec.describe CompanyMailer, type: :mailer do
     before do
       stub_cruncher_authenticate
       stub_cruncher_job_create
+      stub_cruncher_file_upload
       stub_cruncher_file_download test_file
     end
 

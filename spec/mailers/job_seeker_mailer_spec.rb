@@ -75,13 +75,15 @@ RSpec.describe JobSeekerMailer, type: :mailer do
   describe 'Job revoked' do
     let(:job) { FactoryBot.create(:job) }
     let(:job_seeker) { FactoryBot.create(:job_seeker) }
-    let!(:resume)      { FactoryBot.create(:resume, job_seeker: job_seeker) }
+    let(:resume)      { FactoryBot.create(:resume, job_seeker: job_seeker) }
 
     let(:mail) do
       allow(Pusher).to receive(:trigger)
       stub_cruncher_authenticate
       stub_cruncher_job_create
+      stub_cruncher_file_upload
       stub_cruncher_file_download("files/#{resume.file_name}")
+      resume
       job.apply job_seeker
       JobSeekerMailer.job_revoked(job_seeker, job)
     end
